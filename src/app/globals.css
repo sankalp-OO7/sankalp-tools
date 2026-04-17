@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --bg: #090910;
+  --surface: #0f0f1a;
+  --card: #14141f;
+  --border: #1e1e2e;
+  --border-bright: #2a2a40;
+  --accent: #7c6af7;
+  --accent-dim: #3d3580;
+  --accent-glow: #7c6af733;
+  --accent-2: #a78bfa;
+  --green: #3de8a0;
+  --green-dim: #1a6645;
+  --red: #f76a6a;
+  --red-dim: #6b2222;
+  --text: #e8e8f0;
+  --muted: #6b6b80;
+  --sidebar-width: 240px;
+  --topbar-height: 60px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-dim); }
+
+/* Grid bg */
+.grid-bg {
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.3;
+}
