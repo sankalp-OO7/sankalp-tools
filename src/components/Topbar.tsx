@@ -31,14 +31,12 @@ export default function Topbar({ onHamburgerClick }: TopbarProps) {
 
   return (
     <header
-      className="fixed top-0 right-0 flex items-center justify-between px-5 z-20"
+      className="fixed top-0 right-0 left-0 lg:left-16 flex items-center justify-between px-5 z-20"
       style={{
-        left: '64px',
         height: '60px',
         background: 'rgba(9,9,16,0.85)',
         backdropFilter: 'blur(20px)',
         borderBottom: '1px solid #1e1e2e',
-        transition: 'left 0.25s cubic-bezier(0.4,0,0.2,1)',
       }}
     >
       {/* Left: hamburger + breadcrumb */}

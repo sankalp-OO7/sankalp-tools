@@ -62,7 +62,7 @@ async function encodeToMp3(
 ): Promise<Blob> {
   // dynamic import — lamejs has no ESM build, load via require
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const lamejs = await import('lamejs') as any;
+  const lamejs = await import('@breezystack/lamejs') as any;
   const Mp3Encoder = lamejs.default?.Mp3Encoder ?? lamejs.Mp3Encoder;
 
   const numCh = buffer.numberOfChannels;

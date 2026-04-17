@@ -15,14 +15,12 @@ export default function DashboardShell({ children }: { children: React.ReactNode
       <Sidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
       <Topbar onHamburgerClick={() => setMobileOpen(prev => !prev)} />
 
-      {/* Main content - offset for collapsed sidebar (64px) */}
+      {/* Main content: no left offset on mobile (sidebar hidden), 64px on desktop */}
       <main
-        className="relative z-10 min-h-screen"
+        className="relative z-10 min-h-screen ml-0 lg:ml-16"
         style={{
-          marginLeft: '64px',
           marginTop: '60px',
           padding: '2rem',
-          transition: 'margin-left 0.25s cubic-bezier(0.4,0,0.2,1)',
         }}
       >
         {children}
