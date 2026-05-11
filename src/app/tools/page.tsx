@@ -32,6 +32,23 @@ const tools: Tool[] = [
     category: 'Audio',
   },
   {
+    id: 'carousel-creator',
+    label: 'Carousel Creator',
+    description: 'Build branded 1080×1080 carousels for shamsgs.com. Use AI to generate JSON, render slides and download as PNG.',
+    href: '/tools/carousel',
+    badge: 'NEW',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-7 h-7">
+        <rect x="2" y="3" width="20" height="14" rx="2"/>
+        <path d="M8 21h8M12 17v4"/>
+        <path d="M7 8h2M15 8h2M11 8h2" strokeLinecap="round"/>
+      </svg>
+    ),
+    gradient: 'from-amber-600/20 to-yellow-600/10',
+    glow: '#C9A84C',
+    category: 'Content',
+  },
+  {
     id: 'coming-soon-1',
     label: 'Image Compressor',
     description: 'Compress and resize images locally. Supports WebP, JPEG, PNG.',
@@ -88,7 +105,7 @@ const tools: Tool[] = [
 ];
 
 const stats = [
-  { label: 'Tools Available', value: '1', icon: '🛠️', sub: '+3 coming soon' },
+  { label: 'Tools Available', value: '2', icon: '🛠️', sub: '+2 coming soon' },
   { label: 'Runs in Browser', value: '100%', icon: '🔒', sub: 'No data leaves your device' },
   { label: 'Cost', value: '$0', icon: '✨', sub: 'Forever free' },
 ];

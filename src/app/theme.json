@@ -1,0 +1,61 @@
+{
+    "themeEssence": {
+        "brandDNA": {
+            "vibe": "Luxury Intelligence — Dubai AI Powerhouse",
+            "colors": {
+                "primary": "#C9A84C",
+                "primaryGlow": "rgba(201,168,76,0.2)",
+                "secondary": "#050E1C",
+                "accent": "#1E6FA8",
+                "textLight": "#F8F3EA",
+                "textMuted": "#A3B8CC",
+                "success": "#4ECB82",
+                "danger": "#E05C5C"
+            },
+            "typography": {
+                "hero": "Cormorant Garamond, serif",
+                "body": "Syne, sans-serif",
+                "mono": "Space Mono, monospace"
+            },
+            "visualSignatures": [
+                "Gold gradient rules (top & bottom)",
+                "Floating hexagon logo frame",
+                "Neural circuit lines on dark backgrounds",
+                "Candlestick chart watermarks",
+                "Glowing orb accents"
+            ]
+        },
+        "psychologicalHooks": {
+            "slide1_hook": "Curiosity Gap + FOMO — 'Your brain is the weak link'",
+            "slide2_agitate": "Loss Aversion — Show human trading errors",
+            "slide3_solution": "Authority — Dubai HQ, 98% satisfaction, 24/7 uptime",
+            "slide4_mechanism": "Simplicity — 3-step AI process visual",
+            "slide5_proof": "Social Proof — Performance bars, live status ring",
+            "slide6_action": "Scarcity + Reciprocity — '10-day free trial, limited AI slots'"
+        },
+        "layoutRules": {
+            "padding": "24px consistent",
+            "gridOverlay": "28px subtle gold dots",
+            "cornerTreatment": "Sharp with gold accent lines",
+            "imageTreatment": "Clipped inside hexagon or circuit frames",
+            "ctaStyle": "Gold pill buttons with monospace text",
+            "swipeIndicator": "Bottom-right pulsing gold arrow"
+        },
+        "responsiveEssence": {
+            "mobileFirst": true,
+            "safeZone": "Center 80% for text readability",
+            "minFontSizes": {
+                "headline": "28px",
+                "body": "11px",
+                "caption": "8px"
+            }
+        },
+        "consistencyChecklist": [
+            "Every slide has a gold rule line (top or bottom)",
+            "Dark navy background (#050E1C) on all main slides",
+            "Any chart or data uses gold/blue/green color coding",
+            "All calls-to-action use gold gradient buttons",
+            "Footer or bottom strip always includes: 'ShamsGS · Dubai · MT4/MT5'"
+        ]
+    }
+}

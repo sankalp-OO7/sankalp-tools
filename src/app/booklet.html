@@ -1,0 +1,1655 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShamsGS — ChemberNews UAE | AI Forex Trading</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=Syne:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --navy: #050E1C;
+            --navy2: #091628;
+            --navy3: #0d1f38;
+            --gold: #C9A84C;
+            --gold2: #E8C96A;
+            --gold3: #F5E1A0;
+            --gold-dim: rgba(201, 168, 76, 0.18);
+            --cream: #F8F3EA;
+            --cream2: #EDE6D8;
+            --steel: #A3B8CC;
+            --mist: #D8E8F5;
+            --accent: #1E6FA8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        body {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            background: #e0d8cc;
+            font-family: 'Syne', sans-serif;
+            color: var(--navy);
+        }
+
+        .page {
+            width: 210mm;
+            height: 297mm;
+            max-height: 297mm;
+            background: var(--cream);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ─── GOLD RULE TOP ─── */
+        .top-rule {
+            height: 3px;
+            background: linear-gradient(90deg, transparent 0%, var(--gold) 20%, var(--gold2) 50%, var(--gold) 80%, transparent 100%);
+        }
+
+        /* ─── MASTHEAD ─── */
+        .masthead {
+            background: var(--cream);
+            padding: 7px 30px 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 0.5px solid var(--cream2);
+        }
+
+        .masthead-left {
+            font-family: 'Space Mono', monospace;
+            font-size: 7px;
+            color: #8a7a68;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .masthead-center {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 11px;
+            font-weight: 400;
+            color: #8a7a68;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .masthead-right {
+            font-family: 'Space Mono', monospace;
+            font-size: 7px;
+            color: #8a7a68;
+            letter-spacing: 1px;
+            text-align: right;
+        }
+
+        /* ─── HERO ─── */
+        .hero {
+            background: var(--navy);
+            position: relative;
+            overflow: hidden;
+            padding: 0;
+        }
+
+        /* Futuristic circuit-board SVG background */
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            opacity: 0.07;
+        }
+
+        /* Trading chart background in hero */
+        .hero-chart-bg {
+            position: absolute;
+            inset: 0;
+            opacity: 0.13;
+            pointer-events: none;
+        }
+
+        /* Forex ticker strip */
+        .forex-strip {
+            background: var(--navy2);
+            padding: 6px 30px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            border-bottom: 1px solid rgba(201, 168, 76, 0.15);
+            overflow: hidden;
+        }
+
+        .forex-pair {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            flex-shrink: 0;
+        }
+
+        .forex-pair-name {
+            font-family: 'Space Mono', monospace;
+            font-size: 7px;
+            font-weight: 700;
+            color: var(--steel);
+            letter-spacing: 1px;
+        }
+
+        .forex-price {
+            font-family: 'Space Mono', monospace;
+            font-size: 7.5px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .forex-change.up {
+            font-family: 'Space Mono', monospace;
+            font-size: 6px;
+            color: #4ecb82;
+            letter-spacing: 0.5px;
+        }
+
+        .forex-change.down {
+            font-family: 'Space Mono', monospace;
+            font-size: 6px;
+            color: #e05c5c;
+            letter-spacing: 0.5px;
+        }
+
+        .forex-sep {
+            color: rgba(201, 168, 76, 0.25);
+            font-size: 10px;
+        }
+
+        .forex-mini-chart {
+            flex: 1;
+            height: 22px;
+        }
+
+        /* Content area with subtle chart watermark */
+        .col-main {
+            position: relative;
+        }
+
+        .col-main-chart-bg {
+            position: absolute;
+            inset: 0;
+            opacity: 0.04;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        /* Glowing orb */
+        .hero-orb {
+            position: absolute;
+            top: -60px;
+            right: -60px;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 40% 40%, rgba(201, 168, 76, 0.25) 0%, rgba(30, 111, 168, 0.12) 50%, transparent 70%);
+        }
+
+        .hero-orb-2 {
+            position: absolute;
+            bottom: -80px;
+            left: 40px;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(30, 111, 168, 0.15) 0%, transparent 70%);
+        }
+
+        /* Grid lines */
+        .hero-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(201, 168, 76, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(201, 168, 76, 0.04) 1px, transparent 1px);
+            background-size: 28px 28px;
+        }
+
+        .hero-inner {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            gap: 0;
+        }
+
+        .hero-left {
+            flex: 1.5;
+            padding: 20px 22px 18px 28px;
+            border-right: 0.5px solid rgba(201, 168, 76, 0.2);
+        }
+
+        .hero-eyebrow {
+            font-family: 'Space Mono', monospace;
+            font-size: 7.5px;
+            letter-spacing: 3px;
+            color: var(--gold);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hero-eyebrow::before {
+            content: '';
+            display: block;
+            width: 22px;
+            height: 1px;
+            background: var(--gold);
+        }
+
+        .hero-headline {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 40px;
+            font-weight: 600;
+            color: #ffffff;
+            line-height: 1.05;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .hero-headline em {
+            color: var(--gold);
+            font-style: italic;
+        }
+
+        .hero-subhead {
+            font-family: 'Syne', sans-serif;
+            font-size: 9.5px;
+            color: var(--steel);
+            line-height: 1.55;
+            margin-top: 10px;
+            max-width: 320px;
+        }
+
+        /* Ticker-style stats */
+        .hero-ticker {
+            display: flex;
+            gap: 0;
+            margin-top: 14px;
+            border-top: 0.5px solid rgba(201, 168, 76, 0.25);
+            padding-top: 10px;
+        }
+
+        .ticker-item {
+            flex: 1;
+            padding-right: 16px;
+            border-right: 0.5px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .ticker-item:last-child {
+            border-right: none;
+        }
+
+        .ticker-num {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--gold2);
+            line-height: 1;
+        }
+
+        .ticker-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 6.5px;
+            letter-spacing: 1.5px;
+            color: var(--steel);
+            text-transform: uppercase;
+            margin-top: 3px;
+        }
+
+        /* Logo card on hero right */
+        .hero-right {
+            width: 130px;
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-box {
+            text-align: center;
+        }
+
+        .logo-hex {
+            position: relative;
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 10px;
+        }
+
+        .logo-inner-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo-shams {
+            font-family: 'Syne', sans-serif;
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--gold);
+            letter-spacing: 2px;
+        }
+
+        .logo-gs {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 9px;
+            color: var(--steel);
+            letter-spacing: 2px;
+        }
+
+        .hero-badge {
+            background: rgba(201, 168, 76, 0.12);
+            border: 0.5px solid rgba(201, 168, 76, 0.4);
+            border-radius: 6px;
+            padding: 6px 10px;
+            text-align: center;
+        }
+
+        .hero-badge-top {
+            font-family: 'Space Mono', monospace;
+            font-size: 6px;
+            color: var(--gold);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .hero-badge-main {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 16px;
+            color: white;
+            font-weight: 600;
+        }
+
+        .hero-badge-sub {
+            font-family: 'Space Mono', monospace;
+            font-size: 5.5px;
+            color: var(--steel);
+            letter-spacing: 1px;
+        }
+
+        /* ─── AI VISUAL BANNER ─── */
+        .ai-banner {
+            background: var(--navy2);
+            padding: 6px 28px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            border-bottom: 1px solid var(--gold-dim);
+        }
+
+        .ai-banner-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 6.5px;
+            color: var(--gold);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .ai-nodes {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            flex: 1;
+        }
+
+        .ai-node {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--gold);
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .ai-node.dim {
+            background: rgba(201, 168, 76, 0.3);
+        }
+
+        .ai-node.blue {
+            background: var(--accent);
+        }
+
+        .ai-line {
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(201, 168, 76, 0.4), rgba(30, 111, 168, 0.3));
+        }
+
+        .ai-mode-tags {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .ai-tag {
+            font-family: 'Space Mono', monospace;
+            font-size: 6px;
+            padding: 3px 8px;
+            border-radius: 3px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .ai-tag.gold {
+            background: rgba(201, 168, 76, 0.2);
+            color: var(--gold);
+            border: 0.5px solid rgba(201, 168, 76, 0.5);
+        }
+
+        .ai-tag.blue {
+            background: rgba(30, 111, 168, 0.2);
+            color: #7ab8e0;
+            border: 0.5px solid rgba(30, 111, 168, 0.5);
+        }
+
+        .ai-tag.green {
+            background: rgba(20, 140, 80, 0.15);
+            color: #5ecaa0;
+            border: 0.5px solid rgba(20, 140, 80, 0.4);
+        }
+
+        /* ─── MAIN CONTENT ─── */
+        .content {
+            flex: 1;
+            display: flex;
+            gap: 0;
+            padding: 0;
+        }
+
+        .col-main {
+            flex: 1.55;
+            padding: 16px 18px 14px 24px;
+            border-right: 0.5px solid var(--cream2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .col-side {
+            width: 172px;
+            padding: 14px 12px 12px;
+            background: #f4efe5;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Section label */
+        .sec-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 7px;
+            letter-spacing: 3px;
+            color: var(--gold);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sec-label::after {
+            content: '';
+            flex: 1;
+            height: 0.5px;
+            background: rgba(201, 168, 76, 0.4);
+        }
+
+        .sec-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--navy);
+            line-height: 1.15;
+            margin-bottom: 10px;
+            letter-spacing: -0.3px;
+        }
+
+        .body-text {
+            font-family: 'Syne', sans-serif;
+            font-size: 8.2px;
+            line-height: 1.6;
+            color: #2c3e50;
+            margin-bottom: 7px;
+            text-align: justify;
+        }
+
+        .body-text strong {
+            color: var(--navy);
+            font-weight: 600;
+        }
+
+        /* Drop cap */
+        .drop-cap::first-letter {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 54px;
+            font-weight: 700;
+            color: var(--gold);
+            float: left;
+            line-height: 0.72;
+            margin: 4px 10px 0 0;
+            padding-bottom: 2px;
+        }
+
+        /* Pull quote */
+        .pull-quote {
+            position: relative;
+            margin: 8px 0;
+            padding: 8px 12px 8px 16px;
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy3) 100%);
+            border-left: 3px solid var(--gold);
+            border-radius: 0 8px 8px 0;
+        }
+
+        .pull-quote p {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 13px;
+            font-style: italic;
+            color: var(--cream);
+            line-height: 1.5;
+            font-weight: 400;
+        }
+
+        .pull-quote cite {
+            display: block;
+            font-family: 'Space Mono', monospace;
+            font-size: 6.5px;
+            color: var(--gold);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 8px;
+            font-style: normal;
+        }
+
+        /* Feature pillars grid */
+        .pillars-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin: 8px 0;
+        }
+
+        .pillar {
+            background: var(--navy);
+            border-radius: 8px;
+            padding: 8px 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pillar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--gold), transparent);
+        }
+
+        .pillar-icon {
+            font-size: 14px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .pillar-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 8px;
+            font-weight: 700;
+            color: var(--gold2);
+            letter-spacing: 0.5px;
+            margin-bottom: 3px;
+        }
+
+        .pillar-desc {
+            font-family: 'Syne', sans-serif;
+            font-size: 7.5px;
+            color: var(--steel);
+            line-height: 1.5;
+        }
+
+        /* ─── SIDEBAR CARDS ─── */
+        .side-card {
+            background: var(--cream);
+            border-radius: 10px;
+            border: 0.5px solid var(--cream2);
+            overflow: hidden;
+        }
+
+        .side-card-header {
+            background: var(--navy);
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--gold-dim);
+        }
+
+        .side-card-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 8px;
+            font-weight: 700;
+            color: var(--gold);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .side-card-body {
+            padding: 12px;
+        }
+
+        /* Mode list */
+        .mode-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .mode-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 8px;
+            border-radius: 5px;
+            background: #f0ebe0;
+            border: 0.5px solid var(--cream2);
+        }
+
+        .mode-name {
+            font-family: 'Space Mono', monospace;
+            font-size: 6.5px;
+            color: var(--navy);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .mode-tag {
+            font-family: 'Space Mono', monospace;
+            font-size: 5.5px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .tag-gold {
+            background: rgba(201, 168, 76, 0.2);
+            color: #7a5a10;
+            border: 0.5px solid rgba(201, 168, 76, 0.5);
+        }
+
+        .tag-blue {
+            background: rgba(30, 111, 168, 0.15);
+            color: #1a4f80;
+            border: 0.5px solid rgba(30, 111, 168, 0.4);
+        }
+
+        .tag-green {
+            background: rgba(20, 130, 70, 0.15);
+            color: #0e5a30;
+            border: 0.5px solid rgba(20, 130, 70, 0.4);
+        }
+
+        /* Contact card */
+        .contact-card {
+            background: var(--navy);
+            border-radius: 10px;
+            padding: 14px 12px;
+        }
+
+        .contact-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 6px;
+            letter-spacing: 2px;
+            color: var(--gold);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .contact-line {
+            display: flex;
+            align-items: flex-start;
+            gap: 7px;
+            margin-bottom: 7px;
+        }
+
+        .contact-icon {
+            width: 14px;
+            height: 14px;
+            background: var(--gold-dim);
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 7px;
+        }
+
+        .contact-text {
+            font-family: 'Syne', sans-serif;
+            font-size: 7.5px;
+            color: var(--mist);
+            line-height: 1.4;
+        }
+
+        .contact-text strong {
+            color: var(--gold2);
+            display: block;
+            font-size: 8px;
+        }
+
+        /* QR Code area */
+        .qr-wrap {
+            text-align: center;
+            padding-top: 10px;
+            border-top: 0.5px solid rgba(201, 168, 76, 0.2);
+            margin-top: 10px;
+        }
+
+        .qr-img {
+            width: 68px;
+            height: 68px;
+            background: white;
+            padding: 5px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .qr-img img {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .qr-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 5.5px;
+            color: var(--steel);
+            letter-spacing: 1px;
+            margin-top: 5px;
+            text-transform: uppercase;
+        }
+
+        /* License highlight */
+        .license-strip {
+            background: var(--gold-dim);
+            border: 0.5px solid rgba(201, 168, 76, 0.4);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .license-price {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--navy);
+            line-height: 1;
+        }
+
+        .license-price span {
+            font-size: 11px;
+            font-family: 'Syne', sans-serif;
+            font-weight: 400;
+            color: #5a4a28;
+        }
+
+        .license-detail {
+            font-family: 'Space Mono', monospace;
+            font-size: 6px;
+            color: #7a6030;
+            letter-spacing: 1px;
+            margin-top: 4px;
+            text-transform: uppercase;
+        }
+
+        .trial-pill {
+            display: inline-block;
+            background: var(--gold);
+            color: var(--navy);
+            font-family: 'Space Mono', monospace;
+            font-size: 6px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-top: 5px;
+            text-transform: uppercase;
+        }
+
+        /* ─── CHART / AI VISUAL ─── */
+        .chart-section {
+            background: var(--navy);
+            padding: 10px 28px 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-section::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(201, 168, 76, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(201, 168, 76, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .chart-inner {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            gap: 22px;
+            align-items: center;
+        }
+
+        .chart-left {
+            flex: 1;
+        }
+
+        .chart-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 6.5px;
+            letter-spacing: 2.5px;
+            color: var(--gold);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .chart-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 15px;
+            color: white;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .performance-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .perf-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .perf-mode-name {
+            font-family: 'Space Mono', monospace;
+            font-size: 6.5px;
+            color: var(--steel);
+            width: 52px;
+            flex-shrink: 0;
+            letter-spacing: 0.5px;
+        }
+
+        .perf-bar-track {
+            flex: 1;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .perf-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        .fill-fast {
+            width: 88%;
+            background: linear-gradient(90deg, var(--gold), var(--gold2));
+        }
+
+        .fill-scalp {
+            width: 82%;
+            background: linear-gradient(90deg, #4da6e0, #7bc8f5);
+        }
+
+        .fill-moderate {
+            width: 72%;
+            background: linear-gradient(90deg, #2e9a70, #5ecaa0);
+        }
+
+        .fill-heading {
+            width: 65%;
+            background: linear-gradient(90deg, #9070d0, #b8a0f0);
+        }
+
+        .fill-hedge {
+            width: 60%;
+            background: linear-gradient(90deg, #e07040, #f0a080);
+        }
+
+        .fill-slow {
+            width: 45%;
+            background: linear-gradient(90deg, #5080b0, #80aacc);
+        }
+
+        .perf-pct {
+            font-family: 'Space Mono', monospace;
+            font-size: 6.5px;
+            color: var(--gold2);
+            width: 22px;
+            text-align: right;
+        }
+
+        /* Right side: AI wave / indicator */
+        .chart-right {
+            width: 160px;
+            flex-shrink: 0;
+        }
+
+        .ai-indicator-box {
+            background: rgba(255, 255, 255, 0.04);
+            border: 0.5px solid rgba(201, 168, 76, 0.2);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .ai-badge-big {
+            font-family: 'Syne', sans-serif;
+            font-size: 8px;
+            font-weight: 700;
+            color: var(--gold);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .ai-platforms {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        .platform-pill {
+            background: rgba(201, 168, 76, 0.15);
+            border: 0.5px solid rgba(201, 168, 76, 0.4);
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-family: 'Space Mono', monospace;
+            font-size: 7px;
+            color: var(--gold2);
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .uptime-ring {
+            margin: 8px auto;
+            width: 56px;
+            height: 56px;
+        }
+
+        /* ─── BOTTOM STRIP ─── */
+        .bottom-strip {
+            background: var(--cream2);
+            padding: 7px 28px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-top: 0.5px solid #d4c9b5;
+        }
+
+        .bottom-tag {
+            font-family: 'Space Mono', monospace;
+            font-size: 6.5px;
+            color: #7a6b55;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .bottom-tag::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            background: var(--gold);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .bottom-sep {
+            color: #bfb09c;
+            font-size: 8px;
+        }
+
+        /* ─── FOOTER ─── */
+        .footer {
+            background: var(--navy);
+            padding: 12px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-left {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 14px;
+            color: var(--gold);
+            letter-spacing: 3px;
+            font-weight: 500;
+        }
+
+        .footer-center {
+            font-family: 'Space Mono', monospace;
+            font-size: 6.5px;
+            color: var(--steel);
+            letter-spacing: 1px;
+            text-align: center;
+            text-transform: uppercase;
+            line-height: 1.6;
+        }
+
+        .footer-right {
+            font-family: 'Space Mono', monospace;
+            font-size: 6px;
+            color: #4a5a70;
+            letter-spacing: 1px;
+            text-align: right;
+            text-transform: uppercase;
+        }
+
+        /* ─── GOLD RULE BOTTOM ─── */
+        .bottom-rule {
+            height: 3px;
+            background: linear-gradient(90deg, transparent 0%, var(--gold) 20%, var(--gold2) 50%, var(--gold) 80%, transparent 100%);
+        }
+
+        @media print {
+            body {
+                background: none;
+            }
+
+            .page {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+
+        <!-- TOP GOLD RULE -->
+        <div class="top-rule"></div>
+
+        <!-- MASTHEAD / PUBLICATION HEADER -->
+        <!-- <div class="masthead">
+      <div class="masthead-left">ChemberNews UAE &nbsp;·&nbsp; Technology & Finance Edition</div>
+      <div class="masthead-center">Company Profile — Feature</div>
+      <div class="masthead-right">Dubai, United Arab Emirates<br>Business Bay Special Report</div>
+    </div> -->
+
+        <!-- ═══ HERO ═══ -->
+        <div class="hero">
+            <!-- Decorative grid & glows -->
+            <div class="hero-grid"></div>
+            <div class="hero-orb"></div>
+            <div class="hero-orb-2"></div>
+
+            <!-- TRADING CANDLESTICK CHART BACKGROUND -->
+            <svg class="hero-chart-bg" viewBox="0 0 595 200" preserveAspectRatio="xMidYMid slice"
+                xmlns="http://www.w3.org/2000/svg">
+                <!-- Price line / area fill -->
+                <defs>
+                    <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#c9a84c" stop-opacity="0.5" />
+                        <stop offset="100%" stop-color="#c9a84c" stop-opacity="0" />
+                    </linearGradient>
+                </defs>
+                <!-- Area fill under line -->
+                <path
+                    d="M0,160 L30,145 L60,150 L90,120 L120,130 L150,100 L180,115 L210,90 L240,80 L270,95 L300,70 L330,85 L360,60 L390,75 L420,55 L450,70 L480,45 L510,60 L540,40 L570,55 L595,35 L595,200 L0,200 Z"
+                    fill="url(#chartFill)" opacity="0.3" />
+                <!-- Main price line -->
+                <polyline
+                    points="0,160 30,145 60,150 90,120 120,130 150,100 180,115 210,90 240,80 270,95 300,70 330,85 360,60 390,75 420,55 450,70 480,45 510,60 540,40 570,55 595,35"
+                    fill="none" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                <!-- Candlesticks scattered behind -->
+                <!-- Green candles -->
+                <rect x="28" y="138" width="6" height="14" rx="0.5" fill="#4ecb82" opacity="0.7" />
+                <line x1="31" y1="134" x2="31" y2="138" stroke="#4ecb82" stroke-width="1" opacity="0.7" />
+                <line x1="31" y1="152" x2="31" y2="157" stroke="#4ecb82" stroke-width="1" opacity="0.7" />
+                <rect x="88" y="112" width="6" height="14" rx="0.5" fill="#4ecb82" opacity="0.7" />
+                <line x1="91" y1="107" x2="91" y2="112" stroke="#4ecb82" stroke-width="1" opacity="0.7" />
+                <line x1="91" y1="126" x2="91" y2="131" stroke="#4ecb82" stroke-width="1" opacity="0.7" />
+                <rect x="208" y="82" width="6" height="14" rx="0.5" fill="#4ecb82" opacity="0.7" />
+                <line x1="211" y1="77" x2="211" y2="82" stroke="#4ecb82" stroke-width="1" opacity="0.7" />
+                <line x1="211" y1="96" x2="211" y2="101" stroke="#4ecb82" stroke-width="1" opacity="0.7" />
+                <rect x="298" y="62" width="6" height="14" rx="0.5" fill="#4ecb82" opacity="0.7" />
+                <line x1="301" y1="57" x2="301" y2="62" stroke="#4ecb82" stroke-width="1" opacity="0.7" />
+                <line x1="301" y1="76" x2="301" y2="81" stroke="#4ecb82" stroke-width="1" opacity="0.7" />
+                <rect x="418" y="47" width="6" height="14" rx="0.5" fill="#4ecb82" opacity="0.7" />
+                <line x1="421" y1="42" x2="421" y2="47" stroke="#4ecb82" stroke-width="1" opacity="0.7" />
+                <line x1="421" y1="61" x2="421" y2="66" stroke="#4ecb82" stroke-width="1" opacity="0.7" />
+                <rect x="538" y="32" width="6" height="14" rx="0.5" fill="#4ecb82" opacity="0.7" />
+                <line x1="541" y1="27" x2="541" y2="32" stroke="#4ecb82" stroke-width="1" opacity="0.7" />
+                <line x1="541" y1="46" x2="541" y2="51" stroke="#4ecb82" stroke-width="1" opacity="0.7" />
+                <!-- Red candles -->
+                <rect x="58" y="143" width="6" height="12" rx="0.5" fill="#e05c5c" opacity="0.7" />
+                <line x1="61" y1="138" x2="61" y2="143" stroke="#e05c5c" stroke-width="1" opacity="0.7" />
+                <line x1="61" y1="155" x2="61" y2="160" stroke="#e05c5c" stroke-width="1" opacity="0.7" />
+                <rect x="118" y="122" width="6" height="12" rx="0.5" fill="#e05c5c" opacity="0.7" />
+                <line x1="121" y1="117" x2="121" y2="122" stroke="#e05c5c" stroke-width="1" opacity="0.7" />
+                <line x1="121" y1="134" x2="121" y2="139" stroke="#e05c5c" stroke-width="1" opacity="0.7" />
+                <rect x="268" y="87" width="6" height="12" rx="0.5" fill="#e05c5c" opacity="0.7" />
+                <line x1="271" y1="82" x2="271" y2="87" stroke="#e05c5c" stroke-width="1" opacity="0.7" />
+                <line x1="271" y1="99" x2="271" y2="104" stroke="#e05c5c" stroke-width="1" opacity="0.7" />
+                <rect x="388" y="68" width="6" height="12" rx="0.5" fill="#e05c5c" opacity="0.7" />
+                <line x1="391" y1="63" x2="391" y2="68" stroke="#e05c5c" stroke-width="1" opacity="0.7" />
+                <line x1="391" y1="80" x2="391" y2="85" stroke="#e05c5c" stroke-width="1" opacity="0.7" />
+                <!-- Grid lines -->
+                <line x1="0" y1="50" x2="595" y2="50" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"
+                    stroke-dasharray="4 4" />
+                <line x1="0" y1="100" x2="595" y2="100" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"
+                    stroke-dasharray="4 4" />
+                <line x1="0" y1="150" x2="595" y2="150" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"
+                    stroke-dasharray="4 4" />
+                <!-- Price labels on right -->
+                <text x="580" y="52" font-family="monospace" font-size="7" fill="rgba(201,168,76,0.5)"
+                    text-anchor="end">1.2850</text>
+                <text x="580" y="102" font-family="monospace" font-size="7" fill="rgba(201,168,76,0.5)"
+                    text-anchor="end">1.2780</text>
+                <text x="580" y="152" font-family="monospace" font-size="7" fill="rgba(201,168,76,0.5)"
+                    text-anchor="end">1.2710</text>
+            </svg>
+
+            <!-- Futuristic circuit SVG -->
+            <svg class="hero-bg" viewBox="0 0 595 200" preserveAspectRatio="xMidYMid slice"
+                xmlns="http://www.w3.org/2000/svg">
+                <g stroke="#c9a84c" stroke-width="0.5" fill="none">
+                    <path d="M0,40 H80 L100,20 H200 L220,40 H350 L370,60 H500" />
+                    <path d="M0,80 H50 L70,60 H150 L170,80 H280 L300,100 H595" />
+                    <path d="M100,200 V140 L120,120 H240 L260,100" />
+                    <path d="M400,0 V80 L380,100 H320" />
+                    <path d="M595,60 H480 L460,80 H400" />
+                    <circle cx="100" cy="20" r="3" fill="#c9a84c" />
+                    <circle cx="220" cy="40" r="3" fill="#c9a84c" />
+                    <circle cx="370" cy="60" r="2" fill="#c9a84c" />
+                    <circle cx="170" cy="80" r="3" fill="#1e6fa8" />
+                    <circle cx="300" cy="100" r="2" fill="#1e6fa8" />
+                    <circle cx="260" cy="100" r="3" fill="#c9a84c" />
+                    <circle cx="380" cy="100" r="2" fill="#c9a84c" />
+                    <rect x="59" y="53" width="14" height="14" rx="2" fill="rgba(201,168,76,0.08)" stroke="#c9a84c" />
+                    <rect x="148" y="73" width="14" height="14" rx="2" fill="rgba(30,111,168,0.08)" stroke="#1e6fa8" />
+                </g>
+            </svg>
+
+            <div class="hero-inner">
+                <div class="hero-left">
+                    <div class="hero-eyebrow">Artificial Intelligence · Forex Technology · Dubai 2026</div>
+                    <div class="hero-headline">The <em>Intelligence</em><br>Behind<br>Every Trade</div>
+                    <p class="hero-subhead">Shams Global Systems (ShamsGS) redefines what's possible in algorithmic
+                        Forex trading
+                        — deploying AI-powered Expert Advisors that execute with millisecond precision, 24 hours a day,
+                        entirely
+                        free from human emotion or hesitation.</p>
+                    <div class="hero-ticker">
+                        <div class="ticker-item">
+                            <div class="ticker-num">100%</div>
+                            <div class="ticker-label">Uptime</div>
+                        </div>
+                        <div class="ticker-item" style="padding-left:16px;">
+                            <div class="ticker-num">98%</div>
+                            <div class="ticker-label">Satisfaction</div>
+                        </div>
+                        <div class="ticker-item" style="padding-left:16px;">
+                            <div class="ticker-num">6</div>
+                            <div class="ticker-label">AI Modes</div>
+                        </div>
+                        <div class="ticker-item" style="padding-left:16px;">
+                            <div class="ticker-num">24/7</div>
+                            <div class="ticker-label">Live Markets</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hero-right">
+                    <div class="logo-box">
+                        <!-- Hexagon frame + logo image -->
+                        <div class="logo-hex" style="position:relative;width:90px;height:90px;margin:0 auto 10px;">
+                            <!-- Hexagon border SVG on top -->
+                            <svg viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg" width="90" height="90"
+                                style="position:absolute;inset:0;z-index:3;pointer-events:none;">
+                                <polygon points="45,4 82,24 82,66 45,86 8,66 8,24" fill="none" stroke="#c9a84c"
+                                    stroke-width="1.5" filter="drop-shadow(0 0 4px rgba(201,168,76,0.6))" />
+                                <polygon points="45,12 74,28 74,62 45,78 16,62 16,28" fill="none"
+                                    stroke="rgba(201,168,76,0.25)" stroke-width="0.5" />
+                                <circle cx="45" cy="4" r="2" fill="#c9a84c" />
+                                <circle cx="82" cy="24" r="2" fill="#c9a84c" />
+                                <circle cx="82" cy="66" r="2" fill="rgba(201,168,76,0.5)" />
+                                <circle cx="45" cy="86" r="2" fill="rgba(201,168,76,0.5)" />
+                                <circle cx="8" cy="66" r="2" fill="rgba(201,168,76,0.5)" />
+                                <circle cx="8" cy="24" r="2" fill="#c9a84c" />
+                            </svg>
+                            <!-- Clipped logo image -->
+                            <div style="position:absolute;inset:0;z-index:1;
+                clip-path:polygon(50% 4.4%, 91.1% 26.7%, 91.1% 73.3%, 50% 95.6%, 8.9% 73.3%, 8.9% 26.7%);
+                overflow:hidden;">
+                                <img src="shamsgs-logo.jpg" alt="ShamsGS Logo" style="width:100%;height:100%;object-fit:cover;display:block;padding: 7px;
+                    filter:brightness(0.88) saturate(1.1);
+                    mix-blend-mode:luminosity;" />
+                            </div>
+                            <!-- Subtle dark-navy vignette to blend edges -->
+                            <div style="position:absolute;inset:0;z-index:2;pointer-events:none;
+                clip-path:polygon(50% 4.4%, 91.1% 26.7%, 91.1% 73.3%, 50% 95.6%, 8.9% 73.3%, 8.9% 26.7%);
+                background:radial-gradient(ellipse at center, transparent 45%, rgba(5,14,28,0.55) 100%);"></div>
+                        </div>
+                        <div
+                            style="font-family:'Syne',sans-serif;font-size:9px;font-weight:700;color:#c9a84c;letter-spacing:4px;text-transform:uppercase;">
+                            Shams</div>
+                        <div
+                            style="font-family:'Space Mono',monospace;font-size:6px;color:var(--steel);letter-spacing:2px;margin-top:3px;">
+                            GLOBAL SYSTEMS</div>
+                    </div>
+
+                    <div class="hero-badge">
+                        <div class="hero-badge-top">Est. Dubai, UAE</div>
+                        <div class="hero-badge-main">2025</div>
+                        <div class="hero-badge-sub">Business Bay · Ontario Tower</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ AI NODE BANNER ═══ -->
+        <div class="ai-banner">
+            <div class="ai-banner-label">AI Neural Architecture</div>
+            <div class="ai-nodes">
+                <div class="ai-node"></div>
+                <div class="ai-line"></div>
+                <div class="ai-node blue"></div>
+                <div class="ai-line"></div>
+                <div class="ai-node dim"></div>
+                <div class="ai-line"></div>
+                <div class="ai-node"></div>
+                <div class="ai-line"></div>
+                <div class="ai-node blue"></div>
+                <div class="ai-line"></div>
+                <div class="ai-node dim"></div>
+                <div class="ai-line"></div>
+                <div class="ai-node"></div>
+            </div>
+            <div class="ai-mode-tags">
+                <span class="ai-tag gold">MT4</span>
+                <span class="ai-tag gold">MT5</span>
+                <span class="ai-tag blue">TradingView indicator</span>
+                <span class="ai-tag blue">Auto-Execute</span>
+                <span class="ai-tag green">Risk Managed</span>
+                <span class="ai-tag green">24/7 Live</span>
+            </div>
+        </div>
+
+        <!-- ═══ FOREX SYMBOLS STRIP ═══ -->
+        <div class="forex-strip" style="padding:5px 28px;gap:0;justify-content:space-between;">
+            <span class="forex-pair-name" style="opacity:0.7;">MARKETS</span>
+            <div class="forex-sep" style="opacity:0.3;">·</div>
+            <span class="forex-pair-name" style="color:#c9a84c;letter-spacing:2px;">EUR/USD</span>
+            <div class="forex-sep" style="opacity:0.3;">·</div>
+            <span class="forex-pair-name" style="color:#c9a84c;letter-spacing:2px;">GBP/USD</span>
+            <div class="forex-sep" style="opacity:0.3;">·</div>
+            <span class="forex-pair-name" style="color:#c9a84c;letter-spacing:2px;">USD/JPY</span>
+            <div class="forex-sep" style="opacity:0.3;">·</div>
+            <span class="forex-pair-name" style="color:#c9a84c;letter-spacing:2px;">XAU/USD</span>
+            <div class="forex-sep" style="opacity:0.3;">·</div>
+            <span class="forex-pair-name" style="color:#c9a84c;letter-spacing:2px;">USD/CAD</span>
+            <div class="forex-sep" style="opacity:0.3;">·</div>
+            <span class="forex-pair-name" style="color:#c9a84c;letter-spacing:2px;">AUD/USD</span>
+            <div class="forex-sep" style="opacity:0.3;">·</div>
+            <span class="forex-pair-name" style="color:#c9a84c;letter-spacing:2px;">USD/CHF</span>
+            <div class="forex-sep" style="opacity:0.3;">·</div>
+            <span class="forex-pair-name" style="color:#c9a84c;letter-spacing:2px;">NZD/USD</span>
+            <div class="forex-sep" style="opacity:0.3;">·</div>
+            <span class="forex-pair-name" style="opacity:0.7;">AI-TRADED</span>
+        </div>
+
+        <!-- ═══ MAIN CONTENT AREA ═══ -->
+        <div class="content">
+
+            <!-- MAIN COLUMN -->
+            <div class="col-main">
+
+                <!-- Subtle candlestick chart watermark -->
+                <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.035;pointer-events:none;"
+                    viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+                    <line x1="0" y1="75" x2="400" y2="75" stroke="#050E1C" stroke-width="0.5" stroke-dasharray="3 3" />
+                    <line x1="0" y1="150" x2="400" y2="150" stroke="#050E1C" stroke-width="0.5"
+                        stroke-dasharray="3 3" />
+                    <line x1="0" y1="225" x2="400" y2="225" stroke="#050E1C" stroke-width="0.5"
+                        stroke-dasharray="3 3" />
+                    <!-- green candles -->
+                    <rect x="20" y="180" width="12" height="60" rx="1" fill="#2e9a70" />
+                    <line x1="26" y1="165" x2="26" y2="180" stroke="#2e9a70" stroke-width="1.5" />
+                    <line x1="26" y1="240" x2="26" y2="255" stroke="#2e9a70" stroke-width="1.5" />
+                    <rect x="50" y="160" width="12" height="50" rx="1" fill="#2e9a70" />
+                    <line x1="56" y1="148" x2="56" y2="160" stroke="#2e9a70" stroke-width="1.5" />
+                    <line x1="56" y1="210" x2="56" y2="220" stroke="#2e9a70" stroke-width="1.5" />
+                    <rect x="110" y="130" width="12" height="50" rx="1" fill="#2e9a70" />
+                    <line x1="116" y1="118" x2="116" y2="130" stroke="#2e9a70" stroke-width="1.5" />
+                    <line x1="116" y1="180" x2="116" y2="192" stroke="#2e9a70" stroke-width="1.5" />
+                    <rect x="170" y="100" width="12" height="45" rx="1" fill="#2e9a70" />
+                    <line x1="176" y1="88" x2="176" y2="100" stroke="#2e9a70" stroke-width="1.5" />
+                    <line x1="176" y1="145" x2="176" y2="156" stroke="#2e9a70" stroke-width="1.5" />
+                    <rect x="230" y="70" width="12" height="45" rx="1" fill="#2e9a70" />
+                    <line x1="236" y1="58" x2="236" y2="70" stroke="#2e9a70" stroke-width="1.5" />
+                    <line x1="236" y1="115" x2="236" y2="126" stroke="#2e9a70" stroke-width="1.5" />
+                    <rect x="290" y="50" width="12" height="40" rx="1" fill="#2e9a70" />
+                    <line x1="296" y1="38" x2="296" y2="50" stroke="#2e9a70" stroke-width="1.5" />
+                    <line x1="296" y1="90" x2="296" y2="100" stroke="#2e9a70" stroke-width="1.5" />
+                    <rect x="350" y="30" width="12" height="40" rx="1" fill="#2e9a70" />
+                    <line x1="356" y1="18" x2="356" y2="30" stroke="#2e9a70" stroke-width="1.5" />
+                    <line x1="356" y1="70" x2="356" y2="80" stroke="#2e9a70" stroke-width="1.5" />
+                    <!-- red candles -->
+                    <rect x="80" y="163" width="12" height="22" rx="1" fill="#c0392b" />
+                    <line x1="86" y1="158" x2="86" y2="163" stroke="#c0392b" stroke-width="1.5" />
+                    <line x1="86" y1="185" x2="86" y2="192" stroke="#c0392b" stroke-width="1.5" />
+                    <rect x="140" y="118" width="12" height="22" rx="1" fill="#c0392b" />
+                    <line x1="146" y1="112" x2="146" y2="118" stroke="#c0392b" stroke-width="1.5" />
+                    <line x1="146" y1="140" x2="146" y2="148" stroke="#c0392b" stroke-width="1.5" />
+                    <rect x="200" y="88" width="12" height="22" rx="1" fill="#c0392b" />
+                    <line x1="206" y1="82" x2="206" y2="88" stroke="#c0392b" stroke-width="1.5" />
+                    <line x1="206" y1="110" x2="206" y2="118" stroke="#c0392b" stroke-width="1.5" />
+                    <rect x="260" y="58" width="12" height="22" rx="1" fill="#c0392b" />
+                    <line x1="266" y1="52" x2="266" y2="58" stroke="#c0392b" stroke-width="1.5" />
+                    <line x1="266" y1="80" x2="266" y2="88" stroke="#c0392b" stroke-width="1.5" />
+                    <rect x="320" y="38" width="12" height="22" rx="1" fill="#c0392b" />
+                    <line x1="326" y1="32" x2="326" y2="38" stroke="#c0392b" stroke-width="1.5" />
+                    <line x1="326" y1="60" x2="326" y2="68" stroke="#c0392b" stroke-width="1.5" />
+                    <!-- Trend line -->
+                    <polyline
+                        points="26,200 56,180 86,172 116,150 146,128 176,118 206,95 236,82 266,65 296,58 326,45 356,38"
+                        fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-dasharray="6 3" />
+                </svg>
+
+                <div class="sec-label">Company Overview</div>
+                <div class="sec-title">Where Artificial Intelligence<br>Meets the Global Forex Market</div>
+
+                <p class="body-text drop-cap">Shams Global Systems stands at the intersection of machine intelligence
+                    and
+                    financial markets — delivering tools once reserved exclusively for institutional desks, now made
+                    accessible to
+                    individual traders worldwide. Headquartered on the 18th floor of Ontario Tower in Dubai's
+                    prestigious Business
+                    Bay, the company has built an algorithmic trading ecosystem of rare sophistication, purpose-designed
+                    for the
+                    speed and unpredictability of modern Forex markets.</p>
+
+                <p class="body-text">The firm's flagship offering — an <strong>AI-powered Expert Advisor (EA)</strong> —
+                    integrates seamlessly with both MetaTrader 4 and MetaTrader 5, executing with sub-millisecond
+                    precision. It
+                    monitors global currency pairs around the clock, reacts instantly to market signals, and eliminates
+                    the single
+                    greatest vulnerability in trading: human emotion.</p>
+
+                <div class="pull-quote">
+                    <p>"Our mission is to democratize automated trading — to equip every trader with the tools that
+                        simplify
+                        operations and maximize performance, regardless of their background or capital size."</p>
+                    <cite>— ShamsGS Leadership, Business Bay, Dubai</cite>
+                </div>
+
+                <div class="sec-label" style="margin-top:4px;">Core Technology</div>
+
+                <div class="pillars-grid">
+                    <div class="pillar">
+                        <span class="pillar-icon">⚡</span>
+                        <div class="pillar-name">Millisecond Execution</div>
+                        <div class="pillar-desc">Orders fired in &lt;5ms — faster than any human trader could ever
+                            respond to a
+                            signal.</div>
+                    </div>
+                    <div class="pillar">
+                        <span class="pillar-icon">🧠</span>
+                        <div class="pillar-name">Emotion-Free Logic</div>
+                        <div class="pillar-desc">Zero hesitation. Decisions driven purely by data, pattern recognition,
+                            and pre-set
+                            strategy.</div>
+                    </div>
+                    <div class="pillar">
+                        <span class="pillar-icon">📊</span>
+                        <div class="pillar-name">Historical Backtesting</div>
+                        <div class="pillar-desc">Each mode is rigorously validated against years of market data before
+                            live
+                            deployment.</div>
+                    </div>
+                    <div class="pillar">
+                        <span class="pillar-icon">🛡️</span>
+                        <div class="pillar-name">Risk Architecture</div>
+                        <div class="pillar-desc">Multi-layer risk management with adaptive stop-loss and dynamic
+                            position sizing.
+                        </div>
+                    </div>
+                </div>
+
+                <p class="body-text">Dual compatibility with <strong>MT4 and MT5</strong> reaches the broadest trader
+                    base. MT5
+                    users benefit from an enhanced backtesting engine, multi-asset capability, and wider order types —
+                    institutional-grade depth for retail accounts.</p>
+
+            </div>
+
+            <!-- SIDEBAR -->
+            <div class="col-side">
+
+                <!-- Trading Modes -->
+                <div class="side-card">
+                    <div class="side-card-header">
+                        <div class="side-card-title">⚙ AI Trading Modes</div>
+                    </div>
+                    <div class="side-card-body">
+                        <div class="mode-list">
+                            <div class="mode-item">
+                                <div class="mode-name">FAST</div>
+                                <span class="mode-tag tag-gold">High Yield</span>
+                            </div>
+                            <div class="mode-item">
+                                <div class="mode-name">SCALPING</div>
+                                <span class="mode-tag tag-gold">Precision</span>
+                            </div>
+                            <div class="mode-item">
+                                <div class="mode-name">MODERATE</div>
+                                <span class="mode-tag tag-blue">Balanced</span>
+                            </div>
+                            <div class="mode-item">
+                                <div class="mode-name">HEADING</div>
+                                <span class="mode-tag tag-blue">Event-AI</span>
+                            </div>
+                            <div class="mode-item">
+                                <div class="mode-name">ADV. HEDGE</div>
+                                <span class="mode-tag tag-blue">Hedged</span>
+                            </div>
+                            <div class="mode-item">
+                                <div class="mode-name">SLOW</div>
+                                <span class="mode-tag tag-green">Conservative</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- License -->
+                <!-- <div class="license-strip">
+          <div
+            style="font-family:'Space Mono',monospace;font-size:6px;color:#7a6030;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">
+            Annual License</div>
+          <div class="license-price">2,000 <span>AED / yr</span></div>
+          <div class="license-detail">MT4 &amp; MT5 · Full Access</div>
+          <div class="trial-pill">10-Day Free Trial</div>
+        </div> -->
+
+                <!-- Contact -->
+                <div class="contact-card">
+                    <div class="contact-label">Connect With Us</div>
+                    <div class="contact-line">
+                        <div class="contact-icon">✉</div>
+                        <div class="contact-text">
+                            <strong>support@shamsgs.com</strong>
+                        </div>
+                    </div>
+                    <div class="contact-line">
+                        <div class="contact-icon">📞</div>
+                        <div class="contact-text">
+                            <strong>+971 55 683 5252</strong>
+                        </div>
+                    </div>
+                    <div class="contact-line">
+                        <div class="contact-icon">📍</div>
+                        <div class="contact-text">Ontario Tower, 18th Fl.<br>Business Bay, Dubai, UAE</div>
+                    </div>
+                    <div class="qr-wrap">
+                        <div class="qr-img">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=68x68&color=050E1C&bgcolor=ffffff&data=https://www.shamsgs.com"
+                                alt="ShamsGS QR Code">
+                        </div>
+                        <div class="qr-label">www.shamsgs.com</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ═══ PERFORMANCE CHART SECTION ═══ -->
+        <div class="chart-section">
+            <div class="chart-inner">
+                <div class="chart-left">
+                    <div class="chart-label">AI Mode Performance Index — 2024 Backtested Results</div>
+                    <div class="chart-title">Strategy Performance Comparison</div>
+                    <div class="performance-bars">
+                        <div class="perf-row">
+                            <div class="perf-mode-name">FAST</div>
+                            <div class="perf-bar-track">
+                                <div class="perf-bar-fill fill-fast"></div>
+                            </div>
+                            <div class="perf-pct">88%</div>
+                        </div>
+                        <div class="perf-row">
+                            <div class="perf-mode-name">SCALPING</div>
+                            <div class="perf-bar-track">
+                                <div class="perf-bar-fill fill-scalp"></div>
+                            </div>
+                            <div class="perf-pct">82%</div>
+                        </div>
+                        <div class="perf-row">
+                            <div class="perf-mode-name">MODERATE</div>
+                            <div class="perf-bar-track">
+                                <div class="perf-bar-fill fill-moderate"></div>
+                            </div>
+                            <div class="perf-pct">72%</div>
+                        </div>
+                        <div class="perf-row">
+                            <div class="perf-mode-name">HEADING</div>
+                            <div class="perf-bar-track">
+                                <div class="perf-bar-fill fill-heading"></div>
+                            </div>
+                            <div class="perf-pct">65%</div>
+                        </div>
+                        <div class="perf-row">
+                            <div class="perf-mode-name">ADV. HEDGE</div>
+                            <div class="perf-bar-track">
+                                <div class="perf-bar-fill fill-hedge"></div>
+                            </div>
+                            <div class="perf-pct">60%</div>
+                        </div>
+                        <div class="perf-row">
+                            <div class="perf-mode-name">SLOW</div>
+                            <div class="perf-bar-track">
+                                <div class="perf-bar-fill fill-slow"></div>
+                            </div>
+                            <div class="perf-pct">45%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-right">
+                    <div class="ai-indicator-box">
+                        <div class="ai-badge-big">AI Live Status</div>
+                        <!-- SVG uptime ring -->
+                        <svg viewBox="0 0 70 70" width="70" height="70" xmlns="http://www.w3.org/2000/svg"
+                            style="margin:0 auto;display:block;">
+                            <circle cx="35" cy="35" r="28" fill="none" stroke="rgba(255,255,255,0.06)"
+                                stroke-width="6" />
+                            <circle cx="35" cy="35" r="28" fill="none" stroke="url(#ringGrad)" stroke-width="6"
+                                stroke-dasharray="158 176" stroke-dashoffset="44" stroke-linecap="round" />
+                            <defs>
+                                <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#c9a84c" />
+                                    <stop offset="100%" stop-color="#e8c96a" />
+                                </linearGradient>
+                            </defs>
+                            <text x="35" y="32" text-anchor="middle" font-family="'Syne',sans-serif" font-size="13"
+                                font-weight="700" fill="#e8c96a">24/7</text>
+                            <text x="35" y="46" text-anchor="middle" font-family="'Space Mono',monospace" font-size="6"
+                                fill="#a3b8cc" letter-spacing="1">UPTIME</text>
+                        </svg>
+                        <div class="ai-platforms">
+                            <div class="platform-pill">MT4</div>
+                            <div class="platform-pill">MT5</div>
+
+                        </div>
+                        <div
+                            style="font-family:'Space Mono',monospace;font-size:6px;color:var(--steel);letter-spacing:1px;margin-top:8px;text-align:center;text-transform:uppercase;">
+                            Auto-Executing<br>Global Markets</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ BOTTOM INFO STRIP ═══ -->
+        <div class="bottom-strip">
+            <div class="bottom-tag">Est. 2020, Dubai UAE</div>
+            <div class="bottom-sep">·</div>
+            <div class="bottom-tag">Ontario Tower, Business Bay</div>
+            <div class="bottom-sep">·</div>
+            <div class="bottom-tag">2,000 AED / Year License</div>
+            <div class="bottom-sep">·</div>
+            <div class="bottom-tag">10-Day Free Trial Available</div>
+            <div class="bottom-sep">·</div>
+            <div class="bottom-tag">MT4 &amp; MT5 Compatible</div>
+        </div>
+
+        <!-- ═══ FOOTER ═══ -->
+        <!-- <div class="footer">
+      <div class="footer-left">SHAMSGS</div>
+      <div class="footer-center">
+        Shams Global Systems — Ontario Tower, 18th Floor, Business Bay, Dubai, UAE<br>
+        support@shamsgs.com &nbsp;·&nbsp; +971 55 683 5252 &nbsp;·&nbsp; www.shamsgs.com
+      </div>
+      <div class="footer-right">
+        ChemberNews UAE<br>Technology Edition<br>© 2026
+      </div>
+    </div> -->
+
+        <!-- BOTTOM GOLD RULE -->
+        <div class="bottom-rule"></div>
+
+    </div>
+</body>
+
+</html>
