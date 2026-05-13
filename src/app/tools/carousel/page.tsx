@@ -21,18 +21,46 @@ const defAdj:ImgAdj = { panX:0, panY:0, scale:1 };
 
 const clamp = (s:string|undefined, n:number) => s ? String(s).slice(0,n) : '';
 
-// ── Image zone (shared between cover & content, supports pan+zoom) ──────────
+// ── Image zone — uses <canvas> drawn via 2D API for perfect html2canvas quality ──
+// html2canvas reads <canvas> pixel data directly (no CSS sampling / no objectFit issues).
+// Pan & zoom math mirrors the old CSS approach so slider values are identical.
 function ImgZone({ src, adj, radius=0, w='100%', h='100%' }:{ src?:string; adj:ImgAdj; radius?:number; w?:string|number; h?:string|number }) {
-  const style:React.CSSProperties = { position:'relative', width:w, height:h, borderRadius:radius, overflow:'hidden', flexShrink:0 };
-  const imgStyle:React.CSSProperties = {
-    position:'absolute', objectFit:'contain', maxWidth:'none', pointerEvents:'none', userSelect:'none',
-    width:`${adj.scale*100}%`, height:`${adj.scale*100}%`,
-    left:`${50+adj.panX}%`, top:`${50+adj.panY}%`, transform:'translate(-50%,-50%)',
-  };
+  const containerRef=useRef<HTMLDivElement>(null);
+  const canvasRef=useRef<HTMLCanvasElement>(null);
+
+  useEffect(()=>{
+    const canvas=canvasRef.current;
+    const container=containerRef.current;
+    if(!canvas||!container) return;
+    // Prefer explicit numeric dimensions — offsetWidth can be 0 in off-screen fixed containers
+    const cw=typeof w==='number' ? w : container.offsetWidth;
+    const ch=typeof h==='number' ? h : container.offsetHeight;
+    if(!cw||!ch) return;
+    canvas.width=cw; canvas.height=ch;
+    const ctx=canvas.getContext('2d')!;
+    ctx.clearRect(0,0,cw,ch);
+    if(!src) return;
+    const img=new Image();
+    img.onload=()=>{
+      // "contain" fit: scale image to fit within container
+      const containScale=Math.min(cw/img.naturalWidth, ch/img.naturalHeight);
+      const fw=img.naturalWidth  * containScale * adj.scale;
+      const fh=img.naturalHeight * containScale * adj.scale;
+      // Center + apply pan offset (panX/Y are % of container, range -50 to +50)
+      const ox=cw/2 + (adj.panX/100)*cw - fw/2;
+      const oy=ch/2 + (adj.panY/100)*ch - fh/2;
+      ctx.imageSmoothingEnabled=true;
+      ctx.imageSmoothingQuality='high';
+      ctx.drawImage(img, ox, oy, fw, fh);
+    };
+    img.src=src;
+  },[src, adj, w, h]);
+
+  const containerStyle:React.CSSProperties={position:'relative',width:w,height:h,borderRadius:radius,overflow:'hidden',flexShrink:0};
   return (
-    <div style={style}>
+    <div ref={containerRef} style={containerStyle}>
       {src
-        ? <img src={src} alt="" style={imgStyle}/>
+        ? <canvas ref={canvasRef} style={{width:'100%',height:'100%',display:'block'}}/>
         : <div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:"'Space Mono',monospace",fontSize:22,letterSpacing:2,opacity:.25,color:'inherit'}}>[ Upload Image ]</div>
       }
     </div>
@@ -85,7 +113,7 @@ function SlideEl({ slide, idx, total, theme:t, screenshots, logoSrc, imgAdjs, al
     <Wrap>
       {/* image zone 380px */}
       <div style={{position:'absolute',top:72,left:0,right:0,height:380,overflow:'hidden',background:t.coverGrad}}>
-        <ImgZone src={ss} adj={adj} w="100%" h="100%"/>
+        <ImgZone src={ss} adj={adj} w={1080} h={380}/>
         <div style={{position:'absolute',bottom:0,left:0,right:0,height:180,background:`linear-gradient(transparent,${t.bg})`}}/>
       </div>
       {/* text zone */}
@@ -371,26 +399,38 @@ export default function CarouselCreator() {
     r.readAsDataURL(file);
   };
 
-  // ── DOWNLOAD — captures from off-screen full-size refs (no transform!) ──
+  // ── DOWNLOAD — captures at 2x scale then downsamples to 1080×1080 for sharp output ──
   const dlSlide=useCallback(async(idx:number,d:CarouselData)=>{
     setDlIdx(p=>({...p,[idx]:true}));
     try{
       const el=downloadRefs.current[idx];
       if(!el) throw new Error('Render element not ready');
       await document.fonts.ready;
-      const canvas:HTMLCanvasElement=await html2canvas(el,{
-        width:1080, height:1080, scale:1,
+      // Small delay to ensure all canvas img.onload callbacks have fired
+      await new Promise(r=>setTimeout(r,300));
+      // Capture at 2x resolution for high quality (produces 2160×2160 canvas)
+      const hiResCanvas:HTMLCanvasElement=await html2canvas(el,{
+        width:1080, height:1080, scale:2,
         useCORS:true, allowTaint:true, backgroundColor:null, logging:false,
         windowWidth:1080, windowHeight:1080,
+        x:0, y:0, scrollX:0, scrollY:0,
+        imageTimeout:8000,
       });
+      // Downsample to exactly 1080×1080 with high-quality smoothing
+      const out=document.createElement('canvas');
+      out.width=1080; out.height=1080;
+      const ctx=out.getContext('2d')!;
+      ctx.imageSmoothingEnabled=true;
+      ctx.imageSmoothingQuality='high';
+      ctx.drawImage(hiResCanvas,0,0,1080,1080);
       const a=document.createElement('a');
       const name=(d.title||'carousel').replace(/[^a-z0-9]/gi,'-').toLowerCase();
       a.download=`shamsgs-${name}-slide${idx+1}.png`;
-      a.href=canvas.toDataURL('image/png');
+      a.href=out.toDataURL('image/png');
       a.click();
     }catch(e: any){ 
-      console.error("html2canvas error:", e);
-      msg('Download error: '+(e?.message || String(e)),'error'); 
+      console.error('html2canvas error:',e);
+      msg('Download error: '+(e?.message||String(e)),'error'); 
     }
     finally{ setDlIdx(p=>({...p,[idx]:false})); }
   },[]);
@@ -531,11 +571,11 @@ export default function CarouselCreator() {
         </div>
       )}
 
-      {/* ── HIDDEN DOWNLOAD CONTAINER — full 1080×1080, no transform, off-screen ── */}
+      {/* ── HIDDEN DOWNLOAD CONTAINER — full 1080×1080, fixed off-screen, no scroll offset ── */}
       {data&&(
-        <div style={{position:'absolute',top:0,left:0,width:1080,opacity:0,zIndex:-1,pointerEvents:'none'}}>
+        <div style={{position:'fixed',top:0,left:'-9999px',width:1080,pointerEvents:'none',zIndex:-1}}>
           {data.slides.map((_,idx)=>(
-            <div key={`dl-${idx}`} ref={el=>{downloadRefs.current[idx]=el;}} style={{width:1080,height:1080}}>
+            <div key={`dl-${idx}`} ref={el=>{downloadRefs.current[idx]=el;}} style={{width:1080,height:1080,overflow:'hidden'}}>
               <SlideEl {...slideProps(idx)}/>
             </div>
           ))}
