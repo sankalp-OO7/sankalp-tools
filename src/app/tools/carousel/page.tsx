@@ -242,13 +242,12 @@ function PromptBuilder() {
   const [cat,setCat]=useState('MARKETS');
   const [n,setN]=useState('6');
   const [ss,setSs]=useState('Slide 1 (cover)');
-  const [activeOut,setActiveOut]=useState<'carousel'|'caption'>('carousel');
 
   const carouselPrompt=`You are a social media content writer for ShamsGS (shamsgs.com), a UAE-based AI-powered forex trading platform.\n\nCreate a carousel JSON for the topic below. Follow the EXACT schema and ALL character limits.\n\nTOPIC: ${topic||'[enter topic]'}\nCARROUSEL TYPE: ${type}\nCATEGORY TAG: ${cat||'SHAMSGS'} (max 20 chars, uppercase)\nNUMBER OF SLIDES: ${n} (always cover first, CTA last)\nSCREENSHOTS: ${ss||'none'}\n\nSTRICT CHARACTER LIMITS:\n- cover headline: 55 | subheadline: 80 | tag: 25\n- section_label: 28 | content headline: 50 | body: 140\n- bullets: max 5 × 65 chars | stat_number: 12\n- stat_label: 45 | stat_context: 90 | quote_text: 130\n- quote_source: 55 | list items: max 5 × 70 chars\n- cta_headline: 40 | cta_body: 90\n\nSlide types: cover, content, stat, quote, list, cta\nRules: First=cover. Last=cta. has_screenshot:true only where needed. No emojis. Professional tone.\n\nReturn ONLY valid raw JSON:\n{\n  "type":"${type}","title":"...","category":"${cat||'SHAMSGS'}",\n  "slides":[\n    {"slide_type":"cover","headline":"...","subheadline":"...","tag":"...","has_screenshot":true,"page":1},\n    {"slide_type":"content","section_label":"...","headline":"...","body":"...","bullets":["..."],"has_screenshot":false,"page":2},\n    {"slide_type":"stat","stat_number":"...","stat_label":"...","stat_context":"...","page":3},\n    {"slide_type":"quote","quote_text":"...","quote_source":"...","page":4},\n    {"slide_type":"list","section_label":"...","headline":"...","items":[{"number":"01","text":"..."}],"page":5},\n    {"slide_type":"cta","cta_headline":"...","cta_body":"...","page":${n}}\n  ]\n}`;
 
   const captionPrompt=`You are an Instagram content writer for ShamsGS (shamsgs.com), a UAE-based AI-powered forex trading platform.\n\nWrite a compelling Instagram caption for the carousel post below.\n\nTOPIC: ${topic||'[enter topic]'}\nCARROUSEL TYPE: ${type}\nCATEGORY: ${cat||'SHAMSGS'}\nNUMBER OF SLIDES: ${n}\n\nCAPTION REQUIREMENTS:\n1. HOOK (1–2 lines): Grab attention immediately. Start with a bold statement, question, or surprising fact. No emojis in the hook.\n2. BODY (3–5 lines): Expand on the topic with key insights from the carousel. Use line breaks for readability. Keep it conversational yet authoritative.\n3. VALUE STATEMENT (1–2 lines): Explain what the reader gains by saving/sharing this post.\n4. CALL TO ACTION (1 line): Direct, specific CTA — e.g. "Follow @shamsgs for daily market insights" or "Link in bio to start trading smarter."\n5. HASHTAGS (1 block, 15–20 tags): Mix broad (#forex #trading #investing) and niche (#UAEforex #AItrading #shamsgs #forexUAE #tradinglife) hashtags. Place them at the very end after a line break.\n\nBRAND VOICE: Professional, confident, data-driven, and empowering. Targeted at UAE-based retail forex traders and investors.\n\nFORMAT:\n[HOOK]\n\n[BODY]\n\n[VALUE STATEMENT]\n\n[CALL TO ACTION]\n\n.\n.\n.\n[HASHTAGS]`;
 
-  const activeText = activeOut==='carousel' ? carouselPrompt : captionPrompt;
+  const combinedPrompt = `=========================================\nTASK 1: CAROUSEL JSON\n=========================================\n\n${carouselPrompt}\n\n\n\n=========================================\nTASK 2: INSTAGRAM CAPTION\n=========================================\n\n${captionPrompt}`;
 
   const inp=(label:string,val:string,set:(v:string)=>void,ph:string,max?:number,el:'input'|'textarea'|'select'='input',opts?:string[])=>(
     <div style={{marginBottom:16}}>
@@ -259,19 +258,12 @@ function PromptBuilder() {
     </div>
   );
 
-  const tabSt=(t:'carousel'|'caption'):React.CSSProperties=>({
-    flex:1,padding:'9px 0',borderRadius:7,fontFamily:"'Space Mono',monospace",fontSize:10,letterSpacing:1,cursor:'pointer',border:'none',transition:'all .2s',
-    background:activeOut===t?(t==='carousel'?'rgba(201,168,76,0.18)':'rgba(225,100,180,0.18)'):'transparent',
-    color:activeOut===t?(t==='carousel'?'#E8C96A':'#f0a0d8'):'#6b6b80',
-    borderBottom:activeOut===t?`2px solid ${t==='carousel'?'#C9A84C':'#d060b0'}`:'2px solid transparent',
-  });
-
   return (
     <div style={{display:'flex',gap:24,height:'calc(100vh - 160px)'}}>
       {/* Left: inputs */}
       <div style={{width:340,flexShrink:0,overflowY:'auto',paddingRight:8}}>
         <div style={{marginBottom:16,padding:'14px 16px',borderRadius:10,background:'rgba(0,200,255,0.06)',border:'1px solid rgba(0,200,255,0.2)',fontSize:12,color:'#8BA5C8',lineHeight:1.6}}>
-          Fill in fields → copy a prompt → paste into ChatGPT/Claude → use outputs.
+          Fill in fields → copy the full prompt → paste into ChatGPT/Claude → use outputs.
         </div>
         {inp('Topic / Subject',topic,setTopic,'UAE AI trading trends in 2025',200,'textarea')}
         {inp('Carousel Type',type,setType,'',undefined,'select',['news','tech'])}
@@ -279,32 +271,21 @@ function PromptBuilder() {
         {inp('Number of Slides',n,setN,'6',2)}
         {inp('Screenshots Needed',ss,setSs,'Slide 1 (cover), Slide 3',120)}
 
-        {/* Carousel prompt copy */}
+        {/* Combined prompt copy */}
         <div style={{padding:'14px 16px',borderRadius:10,background:'rgba(201,168,76,0.06)',border:'1px solid rgba(201,168,76,0.2)',marginBottom:12}}>
-          <div style={{fontFamily:"'Space Mono',monospace",fontSize:9,letterSpacing:2,color:'#C9A84C',textTransform:'uppercase',marginBottom:10}}>📊 Carousel JSON Prompt</div>
-          <div style={{fontSize:11,color:'#8BA5C8',lineHeight:1.5,marginBottom:12}}>Paste into ChatGPT/Claude to generate slide JSON for the Creator tab.</div>
-          <CopyButton text={carouselPrompt} label='⎘ COPY CAROUSEL PROMPT' size='lg'/>
-        </div>
-
-        {/* Instagram caption copy */}
-        <div style={{padding:'14px 16px',borderRadius:10,background:'rgba(225,100,180,0.06)',border:'1px solid rgba(225,100,180,0.2)',marginBottom:12}}>
-          <div style={{fontFamily:"'Space Mono',monospace",fontSize:9,letterSpacing:2,color:'#d060b0',textTransform:'uppercase',marginBottom:10}}>📸 Instagram Caption Prompt</div>
-          <div style={{fontSize:11,color:'#8BA5C8',lineHeight:1.5,marginBottom:12}}>Paste into ChatGPT/Claude to generate a ready-to-post Instagram caption with hashtags.</div>
-          <CopyButton text={captionPrompt} label='⎘ COPY CAPTION PROMPT' size='lg'/>
+          <div style={{fontFamily:"'Space Mono',monospace",fontSize:9,letterSpacing:2,color:'#C9A84C',textTransform:'uppercase',marginBottom:10}}>📝 Combined Prompt</div>
+          <div style={{fontSize:11,color:'#8BA5C8',lineHeight:1.5,marginBottom:12}}>Paste into ChatGPT/Claude to generate both the Carousel JSON and Instagram Caption at once.</div>
+          <CopyButton text={combinedPrompt} label='⎘ COPY FULL PROMPT' size='lg'/>
         </div>
       </div>
 
-      {/* Right: preview panel with tab switcher */}
+      {/* Right: preview panel */}
       <div style={{flex:1,background:'#030810',borderRadius:12,border:'1px solid rgba(255,255,255,.08)',overflow:'hidden',display:'flex',flexDirection:'column'}}>
-        {/* Tab header */}
         <div style={{padding:'10px 18px',borderBottom:'1px solid rgba(255,255,255,.07)',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12}}>
-          <div style={{display:'flex',gap:0,flex:1,borderRadius:8,overflow:'hidden',border:'1px solid rgba(255,255,255,.08)'}}>
-            <button style={tabSt('carousel')} onClick={()=>setActiveOut('carousel')}>📊 Carousel Prompt</button>
-            <button style={tabSt('caption')} onClick={()=>setActiveOut('caption')}>📸 Insta Caption</button>
-          </div>
-          <CopyButton text={activeText} label={`⎘ COPY ${activeOut==='carousel'?'CAROUSEL':'CAPTION'}`} size='sm'/>
+          <div style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:'#A3B8CC'}}>Prompt Preview</div>
+          <CopyButton text={combinedPrompt} label='⎘ COPY PROMPT' size='sm'/>
         </div>
-        <pre style={{flex:1,overflowY:'auto',padding:20,fontFamily:"'Space Mono',monospace",fontSize:11,color:'#A3B8CC',lineHeight:1.7,whiteSpace:'pre-wrap',margin:0}}>{activeText}</pre>
+        <pre style={{flex:1,overflowY:'auto',padding:20,fontFamily:"'Space Mono',monospace",fontSize:11,color:'#A3B8CC',lineHeight:1.7,whiteSpace:'pre-wrap',margin:0}}>{combinedPrompt}</pre>
       </div>
     </div>
   );
