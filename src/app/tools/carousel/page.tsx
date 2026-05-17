@@ -747,10 +747,13 @@ export default function CarouselCreator() {
               <textarea value={jsonText} onChange={e=>setJsonText(e.target.value)} placeholder={'{\n  "type":"news",\n  "slides":[...]\n}'} style={{width:'100%',height:180,background:'#030810',border:'1px solid rgba(255,255,255,.1)',borderRadius:8,color:'#A3B8CC',fontFamily:"'Space Mono',monospace",fontSize:11,padding:12,resize:'vertical',outline:'none',lineHeight:1.5}}/>
               
               <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,letterSpacing:2,color:'#C9A84C',textTransform:'uppercase',margin:'12px 0 8px'}}>2 — Theme</div>
-              <select value={theme} onChange={e=>setTheme(e.target.value)} style={{width:'100%',background:'#030810',border:'1px solid rgba(255,255,255,.1)',borderRadius:8,color:'#fff',padding:'10px',fontFamily:"'Space Mono',monospace",fontSize:11,outline:'none'}}>
-                {allThemeKeys.map(k=><option key={k} value={k}>{rTheme(k, customThemes).name} {customThemes[k]?'(Custom)':''}</option>)}
-              </select>
-
+              <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                {allThemeKeys.map(k=>(
+                  <button key={k} onClick={()=>setTheme(k)} style={{flex:'1 1 30%',padding:'8px 4px',borderRadius:6,cursor:'pointer',fontFamily:"'Space Mono',monospace",fontSize:10,background:theme===k?'rgba(201,168,76,0.15)':'rgba(255,255,255,.04)',border:`1px solid ${theme===k?'#C9A84C':'rgba(255,255,255,.1)'}`,color:theme===k?'#E8C96A':'#6b6b80',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
+                    {rTheme(k, customThemes).name} {customThemes[k]?'*':''}
+                  </button>
+                ))}
+              </div>
               <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,letterSpacing:2,color:'#C9A84C',textTransform:'uppercase',margin:'12px 0 8px'}}>3 — Ratio</div>
               <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
                 {(Object.keys(RATIOS) as RatioKey[]).map(k=>(
