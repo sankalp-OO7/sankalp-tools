@@ -22,6 +22,8 @@ const BUILTIN_THEMES: Record<string,ThemeDef> = {
   viral:  {name:'Viral',  bg:'#0D0118',bg2:'#160225',bg3:'#1E0335',accent:'#FF3CAC',accent2:'#784BA0',accentDim:'rgba(255,60,172,0.22)', text:'#FFFFFF',textSec:'#D4A8E8',tagBg:'rgba(255,60,172,0.18)',tagColor:'#FF85E1',border:'rgba(255,60,172,0.3)', card:'rgba(255,60,172,0.08)',footerBg:'rgba(13,1,24,0.97)',  grid:'rgba(255,60,172,0.05)',coverGrad:'linear-gradient(150deg,#0D0118 0%,#1E0335 55%,#160225 100%)'},
   luxury: {name:'Luxury', bg:'#080710',bg2:'#0F0E1C',bg3:'#161428',accent:'#C0917A',accent2:'#E8C4A8',accentDim:'rgba(192,145,122,0.2)',text:'#F0EAE0',textSec:'#9C8E82',tagBg:'rgba(192,145,122,0.15)',tagColor:'#E8C4A8',border:'rgba(192,145,122,0.25)',card:'rgba(192,145,122,0.07)',footerBg:'rgba(8,7,16,0.97)',   grid:'rgba(192,145,122,0.04)',coverGrad:'linear-gradient(150deg,#080710 0%,#161428 55%,#0F0E1C 100%)'},
   mint:   {name:'Mint',   bg:'#021812',bg2:'#02261C',bg3:'#033326',accent:'#00E5A0',accent2:'#40FFB5',accentDim:'rgba(0,229,160,0.18)', text:'#FFFFFF',textSec:'#82C8AC',tagBg:'rgba(0,229,160,0.15)', tagColor:'#40FFB5',border:'rgba(0,229,160,0.25)', card:'rgba(0,229,160,0.07)', footerBg:'rgba(2,24,18,0.97)',   grid:'rgba(0,229,160,0.04)', coverGrad:'linear-gradient(150deg,#021812 0%,#033326 55%,#02261C 100%)'},
+  hacker: {name:'Hacker', bg:'#0A0A0A',bg2:'#111111',bg3:'#181818',accent:'#00FF41',accent2:'#008F11',accentDim:'rgba(0,255,65,0.15)', text:'#FFFFFF',textSec:'#A0A0A0',tagBg:'rgba(0,255,65,0.15)', tagColor:'#00FF41',border:'rgba(0,255,65,0.2)', card:'rgba(0,255,65,0.05)', footerBg:'rgba(10,10,10,0.97)', grid:'rgba(0,255,65,0.03)', coverGrad:'linear-gradient(150deg,#0A0A0A 0%,#181818 55%,#111111 100%)'},
+  ocean:  {name:'Ocean',  bg:'#001018',bg2:'#001828',bg3:'#002038',accent:'#00E5FF',accent2:'#00A2FF',accentDim:'rgba(0,229,255,0.15)', text:'#FFFFFF',textSec:'#B0D0E0',tagBg:'rgba(0,229,255,0.15)', tagColor:'#00E5FF',border:'rgba(0,229,255,0.2)', card:'rgba(0,229,255,0.05)', footerBg:'rgba(0,16,24,0.97)', grid:'rgba(0,229,255,0.03)', coverGrad:'linear-gradient(150deg,#001018 0%,#002038 55%,#001828 100%)'}
 };
 function rTheme(key:string, custom:Record<string,ThemeDef>): ThemeDef {
   return BUILTIN_THEMES[key] ?? custom[key] ?? BUILTIN_THEMES.news;
@@ -39,8 +41,8 @@ const defAdj:ImgAdj = {panX:0,panY:0,scale:1};
 type ExtraShape = 'circle'|'rounded'|'square';
 type ExtraPos   = 'tr'|'br'|'bl'|'tl'|'cr';
 interface ExtraImg { src:string;shape:ExtraShape;pos:ExtraPos;size:number;adj:ImgAdj; }
-interface HistoryItem { id:string;title:string;savedAt:string;jsonText:string;theme:string;ratio:RatioKey;align:{tag:number;bullet:number;footer:number;statNum:number;heading:number;subHead:number;secLabel:number;listNum:number;listText:number;quote:number;ctaBtn:number};imgAdjs:Record<number,ImgAdj>; }
-const defAlign = {tag:-9,bullet:9,footer:-9,statNum:-120,heading:-30,subHead:-9,secLabel:-9,listNum:-9,listText:-9,quote:-9,ctaBtn:-9};
+interface HistoryItem { id:string;title:string;savedAt:string;jsonText:string;theme:string;ratio:RatioKey;align:{tag:number;bullet:number;footer:number;statNum:number;heading:number;subHead:number;secLabel:number;listNum:number;listText:number;quote:number;ctaBtn:number;coverFade?:number};imgAdjs:Record<number,ImgAdj>; }
+const defAlign = {tag:-9,bullet:9,footer:-9,statNum:-120,heading:-30,subHead:-9,secLabel:-9,listNum:-9,listText:-9,quote:-9,ctaBtn:-9,coverFade:80};
 function extraPos(p:ExtraPos,sz:number):React.CSSProperties{const m=50,hH=72,fH=58,b:React.CSSProperties={position:'absolute',width:sz,height:sz,zIndex:5};switch(p){case'tr':return{...b,top:hH+m,right:m};case'br':return{...b,bottom:fH+m,right:m};case'bl':return{...b,bottom:fH+m,left:m};case'tl':return{...b,top:hH+m,left:m};case'cr':return{...b,top:'50%',right:m,transform:'translateY(-50%)'};}}
 
 
@@ -86,7 +88,7 @@ function SlideEl({ slide, idx, total, theme:t, screenshots, extraImgs, logoSrc, 
   slide:SlideData; idx:number; total:number; theme:ThemeDef;
   screenshots:Record<number,string>; extraImgs:Record<number,ExtraImg[]>;
   logoSrc:string; imgAdjs:Record<number,ImgAdj>;
-  align:{tag:number;bullet:number;footer:number;statNum:number;heading:number;subHead:number;secLabel:number;listNum:number;listText:number;quote:number;ctaBtn:number;};
+  align:{tag:number;bullet:number;footer:number;statNum:number;heading:number;subHead:number;secLabel:number;listNum:number;listText:number;quote:number;ctaBtn:number;coverFade?:number};
   slideW:number; slideH:number;
 }) {
   const ss=screenshots[idx], adj=imgAdjs[idx]??defAdj, type=slide.slide_type;
@@ -126,10 +128,10 @@ function SlideEl({ slide, idx, total, theme:t, screenshots, extraImgs, logoSrc, 
       {/* image zone 380px */}
       <div style={{position:'absolute',top:72,left:0,right:0,height:380,overflow:'hidden',background:t.coverGrad}}>
         <ImgZone src={ss} adj={adj} w={1080} h={380}/>
-        <div style={{position:'absolute',bottom:0,left:0,right:0,height:180,background:`linear-gradient(transparent,${t.bg})`}}/>
+        <div style={{position:'absolute',bottom:0,left:0,right:0,height:align.coverFade??80,background:`linear-gradient(transparent,${t.bg})`}}/>
       </div>
       {/* text zone */}
-      <div style={{position:'absolute',left:0,right:0,bottom:58,padding:'0 64px 44px',overflow:'hidden'}}>
+      <div style={{position:'absolute',left:0,right:0,bottom:58,padding:'0 110px 44px',overflow:'hidden'}}>
         <div style={{display:'flex',alignItems:'center',gap:14,fontFamily:"'Space Mono',monospace",fontSize:22,letterSpacing:5,textTransform:'uppercase',color:t.accent,marginBottom:18,transform:`translateY(${align.secLabel}px)`}}>
           <span style={{width:36,height:2,background:t.accent,display:'inline-block',flexShrink:0}}/>
           {clamp(slide.tag||'SHAMSGS',25)}
@@ -141,7 +143,7 @@ function SlideEl({ slide, idx, total, theme:t, screenshots, extraImgs, logoSrc, 
   );
 
   if (type==='content') {
-    const hasSS = slide.has_screenshot && ss;
+    const hasSS = false;
     return (
       <Wrap>
         <div style={{...bodyBase,display:'flex',gap:hasSS?52:0}}>
@@ -565,12 +567,12 @@ export default function CarouselCreator() {
   const [status,setStatus]=useState({msg:'Paste JSON and click Render',type:''});
   const [dlIdx,setDlIdx]=useState<Record<number,boolean>>({});
   const [dlAll,setDlAll]=useState(false);
-  const [align,setAlign]=useState({tag:-9,bullet:9,footer:-9,statNum:-120,heading:-30,subHead:-9,secLabel:-9,listNum:-9,listText:-9,quote:-9,ctaBtn:-9});
+  const [align,setAlign]=useState({...defAlign});
   
   const alignLabels:Record<keyof typeof align, string> = {
     tag: "Top Tag (MARKETS)", bullet: "Bullet Dots", footer: "Footer Text",
     statNum: "Big Stat (80%)", heading: "Main Headlines", subHead: "Body & Subheads",
-    secLabel: "Golden Over-titles", listNum: "List Numbers (01, 02)", listText: "List Item Text", quote: "Quote Text", ctaBtn: "CTA Button Text"
+    secLabel: "Golden Over-titles", listNum: "List Numbers (01, 02)", listText: "List Item Text", quote: "Quote Text", ctaBtn: "CTA Button Text", coverFade: "Cover Fade Height"
   };
 
   const previewRefs=useRef<Record<number,HTMLDivElement|null>>({});
@@ -629,6 +631,11 @@ export default function CarouselCreator() {
       if(!d.slides?.length){msg('No slides found','error');return;}
       setData(d); setScreenshots({}); setImgAdjs({}); setExtraImgs({});
       msg(`✓ ${d.slides.length} slides rendered`,'ok');
+      const item: HistoryItem = {
+        id: `h_${Date.now()}`, title: d.title || 'Untitled Carousel', savedAt: new Date().toISOString(),
+        jsonText, theme, ratio, align, imgAdjs: {}
+      };
+      setHistory(prev => [item, ...prev].slice(0, 10));
     }catch(e){ msg('Invalid JSON: '+(e as Error).message,'error'); }
   };
 
@@ -736,14 +743,27 @@ export default function CarouselCreator() {
       {tab==='prompt'&&<PromptBuilder/>}
       {tab==='builder'&&<BuilderTab onLoad={j=>{setJsonText(j);setTab('creator');msg('JSON loaded — click Render','ok');}}/>}
       {tab==='themes'&&<ThemeEditor customThemes={customThemes} setCustomThemes={setCustomThemes}/>}
-      {tab==='history'&&<HistoryPanel history={history} loadHistory={h=>{setJsonText(h.jsonText);setTheme(h.theme);setRatio(h.ratio);setAlign(h.align);setImgAdjs(h.imgAdjs);setTab('creator');msg('History loaded — click Render','ok');}} delHistory={id=>setHistory(prev=>prev.filter(x=>x.id!==id))}/>}
+      {tab==='history'&&<HistoryPanel history={history} loadHistory={h=>{setJsonText(h.jsonText);setTheme(h.theme);setRatio(h.ratio);setAlign({...defAlign, ...h.align});setImgAdjs(h.imgAdjs);setTab('creator');msg('History loaded — click Render','ok');}} delHistory={id=>setHistory(prev=>prev.filter(x=>x.id!==id))}/>}
       
       {tab==='creator'&&(
         <div style={{display:'flex',gap:24,height:'calc(100vh - 200px)'}}>
           {/* Left panel */}
           <div style={{width:340,flexShrink:0,overflowY:'auto',paddingRight:8}}>
             <div style={{marginBottom:14,padding:18,borderRadius:12,background:'var(--card)',border:'1px solid var(--border)'}}>
-              <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,letterSpacing:2,color:'#C9A84C',textTransform:'uppercase',marginBottom:10}}>1 — Paste JSON</div>
+              <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,letterSpacing:2,color:'#C9A84C',textTransform:'uppercase',marginBottom:10,display:'flex',justifyContent:'space-between'}}>
+                <span>1 — Paste JSON</span>
+                <select onChange={e=>{
+                  const h=history.find(x=>x.id===e.target.value);
+                  if(h){
+                    setJsonText(h.jsonText);setTheme(h.theme);setRatio(h.ratio);setAlign({...defAlign, ...h.align});setImgAdjs(h.imgAdjs);
+                    msg('History loaded — click Render','ok');
+                  }
+                  e.target.value='';
+                }} style={{background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.1)',color:'#A3B8CC',fontSize:9,fontFamily:"'Space Mono',monospace",borderRadius:4,outline:'none',maxWidth:120}}>
+                  <option value="">Load History...</option>
+                  {history.map(h=><option key={h.id} value={h.id}>{h.title}</option>)}
+                </select>
+              </div>
               <textarea value={jsonText} onChange={e=>setJsonText(e.target.value)} placeholder={'{\n  "type":"news",\n  "slides":[...]\n}'} style={{width:'100%',height:180,background:'#030810',border:'1px solid rgba(255,255,255,.1)',borderRadius:8,color:'#A3B8CC',fontFamily:"'Space Mono',monospace",fontSize:11,padding:12,resize:'vertical',outline:'none',lineHeight:1.5}}/>
               
               <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,letterSpacing:2,color:'#C9A84C',textTransform:'uppercase',margin:'12px 0 8px'}}>2 — Theme</div>
