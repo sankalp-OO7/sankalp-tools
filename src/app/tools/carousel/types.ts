@@ -27,7 +27,7 @@ export function rTheme(key:string, custom:Record<string,ThemeDef>): ThemeDef {
 }
 
 // ── LocalStorage keys ─────────────────────────────────────────────────────────
-export const LS = { STATE:'cc_state', HISTORY:'cc_history', THEMES:'cc_custom_themes' };
+export const LS = { STATE:'cc_state', HISTORY:'cc_history', THEMES:'cc_custom_themes', TAB:'cc_tab' };
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 export type Tab = 'creator'|'builder'|'prompt'|'themes'|'history';

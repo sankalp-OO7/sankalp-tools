@@ -60,6 +60,15 @@ function CopyButton({ text, label = '⎘ COPY', size = 'sm' }: { text: string; l
     </button>
   );
 }
+// ── Prompt builder (pure) ────────────────────────────────────────────────────
+function buildCombinedPrompt(topic: string, type: string, cat: string, n: string, ss: string) {
+  const t = topic || '[enter topic]';
+  const c = cat || 'SHAMSGS';
+  const carousel = `You are a social media content writer for ShamsGS (shamsgs.com), a UAE-based AI-powered forex trading platform.\n\nCreate a carousel JSON for the topic below. Follow the EXACT schema and ALL character limits.\n\nTOPIC: ${t}\nCARROUSEL TYPE: ${type}\nCATEGORY TAG: ${c} (max 20 chars, uppercase)\nNUMBER OF SLIDES: ${n} (always cover first, CTA last)\nSCREENSHOTS: ${ss || 'none'}\n\nSTRICT CHARACTER LIMITS:\n- cover headline: 55 | subheadline: 80 | tag: 25\n- section_label: 28 | content headline: 50 | body: 140\n- bullets: max 5 × 65 chars | stat_number: 12\n- stat_label: 45 | stat_context: 90 | quote_text: 130\n- quote_source: 55 | list items: max 5 × 70 chars\n- cta_headline: 40 | cta_body: 90\n\nSlide types: cover, content, stat, quote, list, cta\nRules: First=cover. Last=cta. has_screenshot:true only where needed. No emojis. Professional tone.\n\nReturn ONLY valid raw JSON:\n{\n  "type":"${type}","title":"...","category":"${c}",\n  "slides":[\n    {"slide_type":"cover","headline":"...","subheadline":"...","tag":"...","has_screenshot":true,"page":1},\n    {"slide_type":"content","section_label":"...","headline":"...","body":"...","bullets":["..."],"has_screenshot":false,"page":2},\n    {"slide_type":"stat","stat_number":"...","stat_label":"...","stat_context":"...","page":3},\n    {"slide_type":"quote","quote_text":"...","quote_source":"...","page":4},\n    {"slide_type":"list","section_label":"...","headline":"...","items":[{"number":"01","text":"..."}],"page":5},\n    {"slide_type":"cta","cta_headline":"...","cta_body":"...","page":${n}}\n  ]\n}`;
+  const caption = `You are an Instagram content writer for ShamsGS (shamsgs.com), a UAE-based AI-powered forex trading platform.\n\nWrite a compelling Instagram caption for the carousel post below.\n\nTOPIC: ${t}\nCARROUSEL TYPE: ${type}\nCATEGORY: ${c}\nNUMBER OF SLIDES: ${n}\n\nCAPTION REQUIREMENTS:\n1. HOOK (1–2 lines): Grab attention immediately. Start with a bold statement, question, or surprising fact. No emojis in the hook.\n2. BODY (3–5 lines): Expand on the topic with key insights from the carousel. Use line breaks for readability. Keep it conversational yet authoritative.\n3. VALUE STATEMENT (1–2 lines): Explain what the reader gains by saving/sharing this post.\n4. CALL TO ACTION (1 line): Direct, specific CTA — e.g. "Follow @shamsgs for daily market insights" or "Link in bio to start trading smarter."\n5. HASHTAGS (1 block, 15–20 tags): Mix broad (#forex #trading #investing) and niche (#UAEforex #AItrading #shamsgs #forexUAE #tradinglife) hashtags. Place them at the very end after a line break.\n\nBRAND VOICE: Professional, confident, data-driven, and empowering. Targeted at UAE-based retail forex traders and investors.\n\nFORMAT:\n[HOOK]\n\n[BODY]\n\n[VALUE STATEMENT]\n\n[CALL TO ACTION]\n\n.\n.\n.\n[HASHTAGS]`;
+  return `=========================================\nTASK 1: CAROUSEL JSON\n=========================================\n\n${carousel}\n\n\n\n=========================================\nTASK 2: INSTAGRAM CAPTION\n=========================================\n\n${caption}`;
+}
+
 
 // ── Main ─────────────────────────────────────────────────────────────────────
 export default function PromptBuilder() {
@@ -72,28 +81,19 @@ export default function PromptBuilder() {
 
   const setN = (v: string) => setNRaw(v);
 
-  const carouselPrompt = `You are a social media content writer for ShamsGS (shamsgs.com), a UAE-based AI-powered forex trading platform.\n\nCreate a carousel JSON for the topic below. Follow the EXACT schema and ALL character limits.\n\nTOPIC: ${topic || '[enter topic]'}\nCARROUSEL TYPE: ${type}\nCATEGORY TAG: ${cat || 'SHAMSGS'} (max 20 chars, uppercase)\nNUMBER OF SLIDES: ${n} (always cover first, CTA last)\nSCREENSHOTS: ${ss || 'none'}\n\nSTRICT CHARACTER LIMITS:\n- cover headline: 55 | subheadline: 80 | tag: 25\n- section_label: 28 | content headline: 50 | body: 140\n- bullets: max 5 × 65 chars | stat_number: 12\n- stat_label: 45 | stat_context: 90 | quote_text: 130\n- quote_source: 55 | list items: max 5 × 70 chars\n- cta_headline: 40 | cta_body: 90\n\nSlide types: cover, content, stat, quote, list, cta\nRules: First=cover. Last=cta. has_screenshot:true only where needed. No emojis. Professional tone.\n\nReturn ONLY valid raw JSON:\n{\n  "type":"${type}","title":"...","category":"${cat || 'SHAMSGS'}",\n  "slides":[\n    {"slide_type":"cover","headline":"...","subheadline":"...","tag":"...","has_screenshot":true,"page":1},\n    {"slide_type":"content","section_label":"...","headline":"...","body":"...","bullets":["..."],"has_screenshot":false,"page":2},\n    {"slide_type":"stat","stat_number":"...","stat_label":"...","stat_context":"...","page":3},\n    {"slide_type":"quote","quote_text":"...","quote_source":"...","page":4},\n    {"slide_type":"list","section_label":"...","headline":"...","items":[{"number":"01","text":"..."}],"page":5},\n    {"slide_type":"cta","cta_headline":"...","cta_body":"...","page":${n}}\n  ]\n}`;
+  const combinedPrompt = buildCombinedPrompt(topic, type, cat, n, ss);
 
-  const captionPrompt = `You are an Instagram content writer for ShamsGS (shamsgs.com), a UAE-based AI-powered forex trading platform.\n\nWrite a compelling Instagram caption for the carousel post below.\n\nTOPIC: ${topic || '[enter topic]'}\nCARROUSEL TYPE: ${type}\nCATEGORY: ${cat || 'SHAMSGS'}\nNUMBER OF SLIDES: ${n}\n\nCAPTION REQUIREMENTS:\n1. HOOK (1–2 lines): Grab attention immediately. Start with a bold statement, question, or surprising fact. No emojis in the hook.\n2. BODY (3–5 lines): Expand on the topic with key insights from the carousel. Use line breaks for readability. Keep it conversational yet authoritative.\n3. VALUE STATEMENT (1–2 lines): Explain what the reader gains by saving/sharing this post.\n4. CALL TO ACTION (1 line): Direct, specific CTA — e.g. "Follow @shamsgs for daily market insights" or "Link in bio to start trading smarter."\n5. HASHTAGS (1 block, 15–20 tags): Mix broad (#forex #trading #investing) and niche (#UAEforex #AItrading #shamsgs #forexUAE #tradinglife) hashtags. Place them at the very end after a line break.\n\nBRAND VOICE: Professional, confident, data-driven, and empowering. Targeted at UAE-based retail forex traders and investors.\n\nFORMAT:\n[HOOK]\n\n[BODY]\n\n[VALUE STATEMENT]\n\n[CALL TO ACTION]\n\n.\n.\n.\n[HASHTAGS]`;
-
-  const combinedPrompt = `=========================================\nTASK 1: CAROUSEL JSON\n=========================================\n\n${carouselPrompt}\n\n\n\n=========================================\nTASK 2: INSTAGRAM CAPTION\n=========================================\n\n${captionPrompt}`;
-
-  // Paste topic → set topic + auto-copy combined prompt + toast
+  // Paste topic → replace topic, build fresh prompt, copy it, show toast
   const pasteTopicAndCopy = async () => {
     try {
       const text = await navigator.clipboard.readText();
       if (!text.trim()) { toast('Clipboard is empty', 'err'); return; }
-      setTopic(text.trim());
-      // Need combinedPrompt to update with the new topic — use timeout so state renders first
-      setTimeout(() => {
-        // Re-build prompt inline with the new topic value (avoids stale closure)
-        const updatedCarousel = carouselPrompt.replace(`TOPIC: ${topic || '[enter topic]'}`, `TOPIC: ${text.trim()}`);
-        const updatedCaption = captionPrompt.replace(`TOPIC: ${topic || '[enter topic]'}`, `TOPIC: ${text.trim()}`);
-        const updatedCombined = `=========================================\nTASK 1: CAROUSEL JSON\n=========================================\n\n${updatedCarousel}\n\n\n\n=========================================\nTASK 2: INSTAGRAM CAPTION\n=========================================\n\n${updatedCaption}`;
-        navigator.clipboard.writeText(updatedCombined).then(() => {
-          toast('✓ Topic pasted & prompt copied!', 'ok');
-        }).catch(() => toast('✓ Topic pasted', 'ok'));
-      }, 50);
+      const newTopic = text.trim();
+      setTopic(newTopic);
+      // Build prompt fresh with newTopic — no stale state issue
+      const fresh = buildCombinedPrompt(newTopic, type, cat, n, ss);
+      await navigator.clipboard.writeText(fresh);
+      toast('✓ Topic pasted & prompt copied!', 'ok');
     } catch {
       toast('Could not read clipboard', 'err');
     }

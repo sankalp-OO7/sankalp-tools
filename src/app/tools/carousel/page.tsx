@@ -33,7 +33,7 @@ function useLocalStorage<T>(key:string, initialValue:T): [T, (v:T|((val:T)=>T))=
 
 // ── Main Page ────────────────────────────────────────────────────────────────
 export default function CarouselCreator() {
-  const [tab,setTab]=useState<Tab>('creator');
+  const [tab,setTab]=useLocalStorage<Tab>(LS.TAB,'creator');
   const [jsonText,setJsonText]=useState('');
   const [data,setData]=useState<CarouselData|null>(null);
   const [theme,setTheme]=useState<string>('news');
