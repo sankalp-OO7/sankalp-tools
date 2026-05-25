@@ -165,7 +165,7 @@ export default function CarouselCreator() {
   const dlAllSlides=useCallback(async()=>{
     if(!data) return;
     setDlAll(true);
-    for(let i=0;i<data.slides.length;i++){
+    for(let i=data.slides.length-1;i>=0;i--){
       msg(`⏳ Downloading slide ${i+1}/${data.slides.length}...`);
       await dlSlide(i,data);
       await new Promise(r=>setTimeout(r,800));
