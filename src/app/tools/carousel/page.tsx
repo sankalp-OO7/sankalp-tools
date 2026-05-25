@@ -54,6 +54,7 @@ export default function CarouselCreator() {
 
   const previewRefs=useRef<Record<number,HTMLDivElement|null>>({});
   const downloadRefs=useRef<Record<number,HTMLDivElement|null>>({});
+  const coverSsInputRef=useRef<HTMLInputElement|null>(null);
   const [logoSrc,setLogoSrc]=useState(LOGO_PATH);
 
   // LocalStorage state
@@ -174,6 +175,20 @@ export default function CarouselCreator() {
     msg(`✓ All ${data.slides.length} slides saved as PNG`,'ok');
   },[data,dlSlide]);
 
+  const pasteAndRender=async()=>{
+    try{
+      const text=await navigator.clipboard.readText();
+      setJsonText(text);
+      const d=JSON.parse(text) as CarouselData;
+      if(!d.slides?.length){msg('No slides found','error');return;}
+      setData(d); setScreenshots({}); setImgAdjs({}); setExtraImgs({});
+      msg(`✓ ${d.slides.length} slides rendered`,'ok');
+      const item:HistoryItem={id:`h_${Date.now()}`,title:d.title||'Untitled Carousel',savedAt:new Date().toISOString(),jsonText:text,theme,ratio,align,imgAdjs:{}};
+      setHistory(prev=>[item,...prev].slice(0,10));
+      setTimeout(()=>{ coverSsInputRef.current?.click(); },400);
+    }catch(e:any){ msg('Paste/render error: '+(e?.message||String(e)),'error'); }
+  };
+
   const saveToHistory = () => {
     if(!data) return;
     const item: HistoryItem = {
@@ -230,7 +245,7 @@ export default function CarouselCreator() {
               <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,letterSpacing:2,color:'#C9A84C',textTransform:'uppercase',marginBottom:10,display:'flex',alignItems:'center',justifyContent:'space-between',gap:6}}>
                 <span>1 — Paste JSON</span>
                 <div style={{display:'flex',gap:6,alignItems:'center'}}>
-                  <button onClick={()=>navigator.clipboard.readText().then(t=>setJsonText(t)).catch(()=>{})} style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.12)',color:'#A3B8CC',fontFamily:"'Space Mono',monospace",fontSize:9,padding:'3px 10px',borderRadius:5,cursor:'pointer',letterSpacing:1}}>⎘ PASTE</button>
+                  <button onClick={pasteAndRender} style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.12)',color:'#A3B8CC',fontFamily:"'Space Mono',monospace",fontSize:9,padding:'3px 10px',borderRadius:5,cursor:'pointer',letterSpacing:1}}>⎘ PASTE</button>
                   <select onChange={e=>{
                     const h=history.find(x=>x.id===e.target.value);
                     if(h){
@@ -301,7 +316,7 @@ export default function CarouselCreator() {
                           <label style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer'}}>
                             <div style={{flex:1,fontFamily:"'Space Mono',monospace",fontSize:9,color:screenshots[i]?'#4ecb82':'#6b6b80'}}>Primary {s.slide_type==='cover'?'(Req)':'(Opt)'}</div>
                             <span style={{background:screenshots[i]?'rgba(78,203,130,0.12)':'rgba(201,168,76,0.12)',border:`1px solid ${screenshots[i]?'rgba(78,203,130,0.3)':'rgba(201,168,76,0.3)'}`,color:screenshots[i]?'#4ecb82':'#E8C96A',fontSize:9,padding:'4px 8px',borderRadius:4,fontFamily:"'Space Mono',monospace",flexShrink:0}}>{screenshots[i]?'Change':'Upload'}</span>
-                            <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{if(e.target.files?.[0])handleSS(i,e.target.files[0]);}}/>
+                            <input type="file" accept="image/*" style={{display:'none'}} ref={i===0?coverSsInputRef:undefined} onChange={e=>{if(e.target.files?.[0])handleSS(i,e.target.files[0]);}}/>
                           </label>
                           {screenshots[i] && <AdjPanel idx={i} src={screenshots[i]} adj={imgAdjs[i]??defAdj} onChange={a=>setImgAdjs(p=>({...p,[i]:a}))}/>}
                         </div>
