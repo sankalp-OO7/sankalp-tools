@@ -227,20 +227,24 @@ export default function CarouselCreator() {
           {/* Left panel */}
           <div style={{width:340,flexShrink:0,overflowY:'auto',paddingRight:8}}>
             <div style={{marginBottom:14,padding:18,borderRadius:12,background:'var(--card)',border:'1px solid var(--border)'}}>
-              <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,letterSpacing:2,color:'#C9A84C',textTransform:'uppercase',marginBottom:10,display:'flex',justifyContent:'space-between'}}>
+              <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,letterSpacing:2,color:'#C9A84C',textTransform:'uppercase',marginBottom:10,display:'flex',alignItems:'center',justifyContent:'space-between',gap:6}}>
                 <span>1 — Paste JSON</span>
-                <select onChange={e=>{
-                  const h=history.find(x=>x.id===e.target.value);
-                  if(h){
-                    setJsonText(h.jsonText);setTheme(h.theme);setRatio(h.ratio);setAlign({...defAlign, ...h.align});setImgAdjs(h.imgAdjs);
-                    msg('History loaded — click Render','ok');
-                  }
-                  e.target.value='';
-                }} style={{background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.1)',color:'#A3B8CC',fontSize:9,fontFamily:"'Space Mono',monospace",borderRadius:4,outline:'none',maxWidth:120}}>
-                  <option value="">Load History...</option>
-                  {history.map(h=><option key={h.id} value={h.id}>{h.title}</option>)}
-                </select>
+                <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                  <button onClick={()=>navigator.clipboard.readText().then(t=>setJsonText(t)).catch(()=>{})} style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.12)',color:'#A3B8CC',fontFamily:"'Space Mono',monospace",fontSize:9,padding:'3px 10px',borderRadius:5,cursor:'pointer',letterSpacing:1}}>⎘ PASTE</button>
+                  <select onChange={e=>{
+                    const h=history.find(x=>x.id===e.target.value);
+                    if(h){
+                      setJsonText(h.jsonText);setTheme(h.theme);setRatio(h.ratio);setAlign({...defAlign, ...h.align});setImgAdjs(h.imgAdjs);
+                      msg('History loaded — click Render','ok');
+                    }
+                    e.target.value='';
+                  }} style={{background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.1)',color:'#A3B8CC',fontSize:9,fontFamily:"'Space Mono',monospace",borderRadius:4,outline:'none',maxWidth:110}}>
+                    <option value="">History...</option>
+                    {history.map(h=><option key={h.id} value={h.id}>{h.title}</option>)}
+                  </select>
+                </div>
               </div>
+
               <textarea value={jsonText} onChange={e=>setJsonText(e.target.value)} placeholder={'{\n  "type":"news",\n  "slides":[...]\n}'} style={{width:'100%',height:180,background:'#030810',border:'1px solid rgba(255,255,255,.1)',borderRadius:8,color:'#A3B8CC',fontFamily:"'Space Mono',monospace",fontSize:11,padding:12,resize:'vertical',outline:'none',lineHeight:1.5}}/>
               
               <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,letterSpacing:2,color:'#C9A84C',textTransform:'uppercase',margin:'12px 0 8px'}}>2 — Theme</div>

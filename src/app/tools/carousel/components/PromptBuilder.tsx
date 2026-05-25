@@ -33,9 +33,14 @@ export default function PromptBuilder() {
 
   const combinedPrompt = `=========================================\nTASK 1: CAROUSEL JSON\n=========================================\n\n${carouselPrompt}\n\n\n\n=========================================\nTASK 2: INSTAGRAM CAPTION\n=========================================\n\n${captionPrompt}`;
 
-  const inp=(label:string,val:string,set:(v:string)=>void,ph:string,max?:number,el:'input'|'textarea'|'select'='input',opts?:string[])=>(
+  const pasteInto=(set:(v:string)=>void)=>{ navigator.clipboard.readText().then(t=>set(t)).catch(()=>{}); };
+
+  const inp=(label:string,val:string,set:(v:string)=>void,ph:string,max?:number,el:'input'|'textarea'|'select'='input',opts?:string[],showPaste=false)=>(
     <div style={{marginBottom:16}}>
-      <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,letterSpacing:2,color:'#C9A84C',textTransform:'uppercase',marginBottom:7}}>{label}</div>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:7}}>
+        <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,letterSpacing:2,color:'#C9A84C',textTransform:'uppercase'}}>{label}</div>
+        {showPaste&&<button onClick={()=>pasteInto(set)} style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.12)',color:'#A3B8CC',fontFamily:"'Space Mono',monospace",fontSize:9,padding:'3px 10px',borderRadius:5,cursor:'pointer',letterSpacing:1}}>⎘ PASTE</button>}
+      </div>
       {el==='select'?<select value={val} onChange={e=>set(e.target.value)} style={{width:'100%',background:'#030810',border:'1px solid rgba(255,255,255,.12)',borderRadius:8,color:'#fff',fontFamily:"'Space Mono',monospace",fontSize:12,padding:'10px 14px',outline:'none'}}>{opts?.map(o=><option key={o} value={o}>{o}</option>)}</select>
       :el==='textarea'?<textarea value={val} onChange={e=>set(e.target.value)} placeholder={ph} maxLength={max} rows={2} style={{width:'100%',background:'#030810',border:'1px solid rgba(255,255,255,.12)',borderRadius:8,color:'#fff',fontFamily:"'Space Mono',monospace",fontSize:12,padding:'10px 14px',outline:'none',resize:'vertical'}}/>
       :<input value={val} onChange={e=>set(e.target.value)} placeholder={ph} maxLength={max} style={{width:'100%',background:'#030810',border:'1px solid rgba(255,255,255,.12)',borderRadius:8,color:'#fff',fontFamily:"'Space Mono',monospace",fontSize:12,padding:'10px 14px',outline:'none'}}/>}
@@ -49,10 +54,17 @@ export default function PromptBuilder() {
         <div style={{marginBottom:16,padding:'14px 16px',borderRadius:10,background:'rgba(0,200,255,0.06)',border:'1px solid rgba(0,200,255,0.2)',fontSize:12,color:'#8BA5C8',lineHeight:1.6}}>
           Fill in fields → copy the full prompt → paste into ChatGPT/Claude → use outputs.
         </div>
-        {inp('Topic / Subject',topic,setTopic,'UAE AI trading trends in 2025',200,'textarea')}
+        {inp('Topic / Subject',topic,setTopic,'UAE AI trading trends in 2025',200,'textarea',undefined,true)}
         {inp('Carousel Type',type,setType,'',undefined,'select',['news','tech'])}
         {inp('Category Tag',cat,setCat,'MARKETS',20)}
-        {inp('Number of Slides',n,setN,'6',2)}
+        <div style={{marginBottom:16}}>
+          <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,letterSpacing:2,color:'#C9A84C',textTransform:'uppercase',marginBottom:7}}>Number of Slides</div>
+          <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+            {[5,6,7,8,9,10,11,12].map(num=>(
+              <button key={num} onClick={()=>setN(String(num))} style={{flex:'1 0 calc(25% - 6px)',padding:'8px 0',borderRadius:7,cursor:'pointer',fontFamily:"'Space Mono',monospace",fontSize:12,fontWeight:700,background:n===String(num)?'rgba(201,168,76,0.2)':'rgba(255,255,255,.04)',border:`1px solid ${n===String(num)?'#C9A84C':'rgba(255,255,255,.1)'}`,color:n===String(num)?'#E8C96A':'#6b6b80',transition:'all .15s'}}>{num}</button>
+            ))}
+          </div>
+        </div>
         {inp('Screenshots Needed',ss,setSs,'Slide 1 (cover), Slide 3',120)}
 
         {/* Combined prompt copy */}
