@@ -1,5 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { ThemeDef, BUILTIN_THEMES } from '../types';
+
+// ── Tiny Toast ──────────────────────────────────────────────────────────────
+type ToastItem = { id: number; msg: string; type: 'ok' | 'err' | 'info' };
+let _tid = 0;
+function useToast() {
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const toast = useCallback((msg: string, type: ToastItem['type'] = 'info') => {
+    const id = ++_tid;
+    setToasts(p => [...p, { id, msg, type }]);
+    setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 3000);
+  }, []);
+  return { toasts, toast };
+}
+function Toasts({ toasts }: { toasts: ToastItem[] }) {
+  return (
+    <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9999, display: 'flex', flexDirection: 'column', gap: 8, pointerEvents: 'none' }}>
+      {toasts.map(t => (
+        <div key={t.id} style={{
+          padding: '10px 18px', borderRadius: 8, fontSize: 12, fontFamily: "'Space Mono',monospace",
+          background: t.type === 'ok' ? 'rgba(78,203,130,0.15)' : t.type === 'err' ? 'rgba(224,92,92,0.15)' : 'rgba(201,168,76,0.15)',
+          border: `1px solid ${t.type === 'ok' ? 'rgba(78,203,130,0.4)' : t.type === 'err' ? 'rgba(224,92,92,0.4)' : 'rgba(201,168,76,0.4)'}`,
+          color: t.type === 'ok' ? '#4ecb82' : t.type === 'err' ? '#e05c5c' : '#E8C96A',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', pointerEvents: 'none',
+        }}>{t.msg}</div>
+      ))}
+    </div>
+  );
+}
 
 function CopyButton({ text, label='⎘ COPY', size='sm' }:{ text:string; label?:string; size?:'sm'|'lg' }) {
   const [copied,setCopied]=useState(false);
@@ -25,6 +53,8 @@ export default function ThemeEditor({ customThemes, setCustomThemes }:{ customTh
   const [editKey, setEditKey] = useState<string|null>(null);
   const [editDef, setEditDef] = useState<ThemeDef|null>(null);
   const [aiInput, setAiInput] = useState('');
+  const [pendingDel, setPendingDel] = useState<string|null>(null);
+  const { toasts, toast } = useToast();
   
   const allThemes = { ...BUILTIN_THEMES, ...customThemes };
   
@@ -44,23 +74,31 @@ export default function ThemeEditor({ customThemes, setCustomThemes }:{ customTh
     if(!editKey||!editDef) return;
     setCustomThemes({ ...customThemes, [editKey]: editDef });
     setEditKey(null); setEditDef(null);
+    toast('✓ Theme saved', 'ok');
   };
 
   const delTheme = (k:string) => {
-    if(!confirm('Delete this theme?')) return;
-    const t = {...customThemes}; delete t[k]; setCustomThemes(t);
+    if (pendingDel === k) {
+      const t = {...customThemes}; delete t[k]; setCustomThemes(t);
+      setPendingDel(null);
+      toast('Theme deleted', 'info');
+    } else {
+      setPendingDel(k);
+      setTimeout(() => setPendingDel(null), 3000);
+    }
   };
 
   const aiPrompt = `You are an expert UI designer creating viral Instagram carousel themes. Create a JSON theme for a Carousel Creator based on this description: "${aiInput}"\n\nEnsure colors pop, gradients hook viewers, and fonts pair beautifully. Use standard Google fonts (e.g. 'Inter', 'Playfair Display', 'Syne', 'Space Mono').\n\nReturn ONLY raw JSON matching this interface:\n{\n  "name": "string (Theme Name)",\n  "bg": "string (hex solid)",\n  "bgGrad": "string (optional linear-gradient CSS for the main background)",\n  "bg2": "string (hex)",\n  "bg3": "string (hex)",\n  "accent": "string (hex)",\n  "accent2": "string (hex)",\n  "accentDim": "string (rgba)",\n  "text": "string (hex)",\n  "textSec": "string (hex)",\n  "tagBg": "string (rgba)",\n  "tagColor": "string (hex)",\n  "border": "string (rgba)",\n  "card": "string (rgba)",\n  "footerBg": "string (rgba)",\n  "grid": "string (rgba)",\n  "coverGrad": "string (linear-gradient CSS fade for cover)",\n  "fontHeadline": "string (e.g. \\"'Playfair Display', serif\\")",\n  "fontBody": "string (e.g. \\"'Inter', sans-serif\\")",\n  "fontMono": "string (e.g. \\"'JetBrains Mono', monospace\\")",\n  "radius": number (0 for sharp, 16 for round)\n}`;
 
   const [aiJson, setAiJson] = useState('');
   const importAi = () => {
-    try { const t=JSON.parse(aiJson); setEditDef(t); setAiJson(''); alert('Theme imported! Review and click Save.'); }
-    catch(e){ alert('Invalid JSON'); }
+    try { const t=JSON.parse(aiJson); setEditDef(t); setAiJson(''); toast('Theme imported — review and click Save', 'ok'); }
+    catch(e){ toast('Invalid JSON', 'err'); }
   };
 
   return (
     <div style={{display:'flex',gap:24,height:'calc(100vh - 160px)'}}>
+      <Toasts toasts={toasts} />
       {/* Left: list of themes */}
       <div style={{width:340,flexShrink:0,overflowY:'auto',paddingRight:8,display:'flex',flexDirection:'column',gap:12}}>
         <button onClick={startNew} style={{width:'100%',padding:12,background:'rgba(255,255,255,0.05)',border:'1px dashed rgba(255,255,255,0.2)',color:'#A3B8CC',borderRadius:8,cursor:'pointer',fontFamily:"'Space Mono',monospace"}}>+ NEW THEME</button>
@@ -73,7 +111,7 @@ export default function ThemeEditor({ customThemes, setCustomThemes }:{ customTh
                 <div style={{display:'flex',gap:6}}>
                   {!isBuiltIn && <button onClick={()=>startEdit(k,t)} style={{background:'none',border:'1px solid rgba(255,255,255,.1)',color:'#A3B8CC',fontSize:10,padding:'4px 8px',borderRadius:4,cursor:'pointer',fontFamily:"'Space Mono',monospace"}}>Edit</button>}
                   <button onClick={()=>startEdit(k,t,true)} style={{background:'none',border:'1px solid rgba(255,255,255,.1)',color:'#A3B8CC',fontSize:10,padding:'4px 8px',borderRadius:4,cursor:'pointer',fontFamily:"'Space Mono',monospace"}}>Copy</button>
-                  {!isBuiltIn && <button onClick={()=>delTheme(k)} style={{background:'rgba(224,92,92,.1)',border:'1px solid rgba(224,92,92,.3)',color:'#e05c5c',fontSize:10,padding:'4px 8px',borderRadius:4,cursor:'pointer',fontFamily:"'Space Mono',monospace"}}>✕</button>}
+                  {!isBuiltIn && <button onClick={()=>delTheme(k)} style={{background: pendingDel===k ? 'rgba(224,92,92,.3)' : 'rgba(224,92,92,.1)',border:'1px solid rgba(224,92,92,.3)',color:'#e05c5c',fontSize:10,padding:'4px 8px',borderRadius:4,cursor:'pointer',fontFamily:"'Space Mono',monospace"}}>{pendingDel===k?'Confirm?':'✕'}</button>}
                 </div>
               </div>
               <div style={{display:'flex',height:24,borderRadius:4,overflow:'hidden'}}>
