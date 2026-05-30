@@ -45,27 +45,49 @@ function getDeterministicFillers(count: number, seed: number): string {
   return res.join(' ');
 }
 
-// Pack text tightly character-by-character to allow mid-word breaks like a narrow newspaper column
-export function wrapTextCharLevel(ctx: CanvasRenderingContext2D, text: string, maxW: number): string[] {
+// Pack text tightly character-by-character, protecting the keyword from being split across lines
+export function wrapTextCharLevel(ctx: CanvasRenderingContext2D, text: string, maxW: number, keyword: string): string[] {
   const lines: string[] = [];
   let currentLine = '';
-  // Flatten consecutive whitespaces
-  const words = text.replace(/\s+/g, ' ').trim();
-  for (let i = 0; i < words.length; i++) {
-    const char = words[i];
-    const testLine = currentLine + char;
-    if (ctx.measureText(testLine).width > maxW) {
-      lines.push(currentLine.trim());
-      currentLine = char;
+  const kwLower = keyword.toLowerCase();
+  
+  // Clean consecutive whitespaces
+  const cleanText = text.replace(/\s+/g, ' ').trim();
+  
+  let i = 0;
+  while (i < cleanText.length) {
+    const remaining = cleanText.substring(i);
+    if (keyword && remaining.toLowerCase().startsWith(kwLower)) {
+      // Consume keyword as a single unbreakable token
+      const token = cleanText.substring(i, i + keyword.length);
+      const testLine = currentLine + token;
+      if (ctx.measureText(testLine).width > maxW) {
+        lines.push(currentLine.trim());
+        currentLine = token;
+      } else {
+        currentLine = testLine;
+      }
+      i += keyword.length;
     } else {
-      currentLine = testLine;
+      // Consume regular single character token
+      const token = cleanText[i];
+      const testLine = currentLine + token;
+      if (ctx.measureText(testLine).width > maxW) {
+        lines.push(currentLine.trim());
+        currentLine = token;
+      } else {
+        currentLine = testLine;
+      }
+      i++;
     }
   }
+  
   if (currentLine) {
     lines.push(currentLine.trim());
   }
   return lines;
 }
+
 
 // ── Texture helpers ───────────────────────────────────────────────────────────
 function noise(ctx: CanvasRenderingContext2D, cw: number, ch: number, count: number, op: number) {
@@ -280,7 +302,7 @@ export function drawFrame(opts: {
     const Y_HL_START = Y_RULE1 + Math.round(60 * s);
     const HL_LINE_H = Math.round(HL_FS * 1.22);
     ctx.font = `bold ${HL_FS}px ${f}`; ctx.fillStyle = theme.headlineColor;
-    const hlLines = wrapTextCharLevel(ctx, headline, MAXW); // Character-level wrap!
+    const hlLines = wrapTextCharLevel(ctx, headline, MAXW, keyword); // Character-level wrap!
     hlLines.forEach((ln, i) => ctx.fillText(ln, cw * 0.5, Y_HL_START + i * HL_LINE_H));
     const Y_RULE2 = Y_HL_START + hlLines.length * HL_LINE_H + Math.round(8 * s);
     ctx.strokeStyle = theme.dividerColor; ctx.lineWidth = 0.8;
@@ -296,7 +318,7 @@ export function drawFrame(opts: {
 
     // Draw body lines tightly packed as a solid continuous overflowing paragraph column
     ctx.font = BODY;
-    const allLines = wrapTextCharLevel(ctx, fullBodyText, MAXW);
+    const allLines = wrapTextCharLevel(ctx, fullBodyText, MAXW, keyword);
 
     renderBodyLines(ctx, allLines, keyword, theme, PAD, FS, LINE_H, BODY, f, 0, blurBody, ch, cw, frameIdx, blurStrength);
 
@@ -329,7 +351,7 @@ export function drawFrame(opts: {
     ctx.beginPath(); ctx.moveTo(PAD, Y_RULE); ctx.lineTo(leftW - PAD, Y_RULE); ctx.stroke();
     ctx.font = `bold ${HL_FS}px ${f}`; ctx.fillStyle = theme.headlineColor;
     const HL_H = Math.round(HL_FS * 1.18);
-    wrapTextCharLevel(ctx, headline, leftW - PAD * 2).forEach((ln, i) => ctx.fillText(ln, leftW * 0.5, Y_RULE + Math.round(26 * s) + i * HL_H));
+    wrapTextCharLevel(ctx, headline, leftW - PAD * 2, keyword).forEach((ln, i) => ctx.fillText(ln, leftW * 0.5, Y_RULE + Math.round(26 * s) + i * HL_H));
     ctx.font = `italic ${Math.round(16 * s)}px ${f}`; ctx.fillStyle = theme.fontNameColor;
     if (!matchCut) ctx.fillText(fontObj.name, leftW * 0.5, ch - Math.round(28 * s));
     ctx.restore();
@@ -343,7 +365,7 @@ export function drawFrame(opts: {
 
     // Draw right column body lines with perfect vertical centering on keyword line
     ctx.font = BODY;
-    const allLines = wrapTextCharLevel(ctx, fullBodyText, rightW);
+    const allLines = wrapTextCharLevel(ctx, fullBodyText, rightW, keyword);
 
     renderBodyLines(ctx, allLines, keyword, theme, PAD, FS, LINE_H, BODY, f, rightX, blurBody, ch, cw, frameIdx, blurStrength);
 
@@ -366,7 +388,7 @@ export function drawFrame(opts: {
     ctx.beginPath(); ctx.moveTo(PAD, Y_RULE); ctx.lineTo(cw - PAD, Y_RULE); ctx.stroke();
     ctx.font = `bold ${HL_FS}px ${f}`; ctx.fillStyle = theme.headlineColor;
     const HL_H = Math.round(HL_FS * 1.15);
-    wrapTextCharLevel(ctx, headline, MAXW).forEach((ln, i) => ctx.fillText(ln, cw * 0.5, Y_RULE + Math.round(40 * s) + i * HL_H));
+    wrapTextCharLevel(ctx, headline, MAXW, keyword).forEach((ln, i) => ctx.fillText(ln, cw * 0.5, Y_RULE + Math.round(40 * s) + i * HL_H));
     ctx.restore();
 
     // Deterministic random paragraph overflow
@@ -377,7 +399,7 @@ export function drawFrame(opts: {
     const fullBodyText = `${prependedText} ${bodyText} ${appendedText}`;
 
     ctx.font = BODY;
-    const allLines = wrapTextCharLevel(ctx, fullBodyText, MAXW);
+    const allLines = wrapTextCharLevel(ctx, fullBodyText, MAXW, keyword);
 
     renderBodyLines(ctx, allLines, keyword, theme, PAD, FS, LINE_H, BODY, f, 0, blurBody, ch, cw, frameIdx, blurStrength);
   }
