@@ -49,6 +49,7 @@ const btnOut: React.CSSProperties = {
 export default function PaperAnimatorPage() {
   const [tab, setTab] = useState<Tab>('frames');
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [keywordInput, setKeywordInput] = useState(DEFAULT_SETTINGS.keyword);
   const [theme, setTheme] = useState(DEFAULT_THEME);
   const [frames, setFrames] = useState<Frame[]>(DEFAULT_FRAMES);
   const [generated, setGenerated] = useState<{ url: string; idx: number }[]>([]);
@@ -75,11 +76,25 @@ export default function PaperAnimatorPage() {
     const results: { url: string; idx: number }[] = [];
     valid.forEach((f, i) => {
       const font = _settings.matchCut ? FONTS[0] : FONTS[i % FONTS.length];
+      
+      // Proactive UX Dynamic Keyword Swapping: If the frame doesn't already contain the custom keyword,
+      // dynamically swap occurrences of "Qualifier 2" or "Qualifier" so it instantly highlights their keyword!
+      const customKw = _settings.keyword.trim();
+      let bodyText = f.body || f.headline;
+      let headlineText = f.headline || _settings.keyword;
+
+      if (customKw && !bodyText.toLowerCase().includes(customKw.toLowerCase())) {
+        bodyText = bodyText.replace(/Qualifier 2/g, customKw).replace(/Qualifier/gi, customKw);
+      }
+      if (customKw && !headlineText.toLowerCase().includes(customKw.toLowerCase())) {
+        headlineText = headlineText.replace(/Qualifier 2/g, customKw).replace(/Qualifier/gi, customKw);
+      }
+
       const url = drawFrame({
         keyword: _settings.keyword,
         breadcrumb: _settings.breadcrumb,
-        headline: f.headline || _settings.keyword,
-        bodyText: f.body || f.headline,
+        headline: headlineText,
+        bodyText: bodyText,
         fontObj: font,
         ratio: _settings.ratio,
         texture: _settings.texture,
@@ -135,23 +150,40 @@ export default function PaperAnimatorPage() {
   }, []);
 
   // Live updates trigger generate instantly
-  const updateSettings = (s: typeof settings) => {
+  const updateSettings = useCallback((s: typeof settings) => {
     setSettings(s);
     if (hydrated) saveSettings(s);
     generate(s, frames, theme);
-  };
+  }, [hydrated, frames, theme, generate]);
 
-  const updateTheme = (t: typeof theme) => {
+  const updateTheme = useCallback((t: typeof theme) => {
     setTheme(t);
     if (hydrated) saveTheme(t);
     generate(settings, frames, t);
-  };
+  }, [hydrated, settings, frames, generate]);
 
-  const updateFrames = (fs: typeof frames) => {
+  const updateFrames = useCallback((fs: typeof frames) => {
     setFrames(fs);
     if (hydrated) saveFrames(fs);
     generate(settings, fs, theme);
-  };
+  }, [hydrated, settings, theme, generate]);
+
+  // Sync keywordInput when external settings.keyword changes (e.g. storage hydrations or templates)
+  useEffect(() => {
+    setKeywordInput(settings.keyword);
+  }, [settings.keyword]);
+
+  // Debounce input keyword to highlight updates by exactly 2 seconds to eliminate keystroke render lag
+  useEffect(() => {
+    if (!hydrated) return;
+    const timer = setTimeout(() => {
+      const trimmed = keywordInput.trim();
+      if (trimmed && trimmed !== settings.keyword) {
+        updateSettings({ ...settings, keyword: trimmed });
+      }
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [keywordInput, settings, updateSettings, hydrated]);
 
   const resetToRef = () => {
     saveSettings(DEFAULT_SETTINGS);
@@ -266,7 +298,13 @@ Rules:
               <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#e8e8f0', letterSpacing: '-0.02em', fontFamily: 'Syne, sans-serif' }}>
                 📰 Paper Animator
               </h1>
-              <button onClick={() => generate(settings, frames, theme)} disabled={loading}
+              <button onClick={() => {
+                const trimmed = keywordInput.trim();
+                const s = { ...settings, keyword: trimmed || settings.keyword };
+                setSettings(s);
+                if (hydrated) saveSettings(s);
+                generate(s, frames, theme);
+              }} disabled={loading}
                 style={{
                   background: 'linear-gradient(135deg, #7c6af7, #a78bfa)', color: '#fff', border: 'none',
                   borderRadius: 10, padding: '10px 24px', fontSize: 13, fontWeight: 800,
@@ -290,8 +328,8 @@ Rules:
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
               <div style={{ flex: 1, minWidth: 160 }}>
                 <span style={lbl}>Keyword to Highlight</span>
-                <input style={inp} value={settings.keyword} onChange={e => {
-                  updateSettings({ ...settings, keyword: e.target.value });
+                <input style={inp} value={keywordInput} onChange={e => {
+                  setKeywordInput(e.target.value);
                 }} placeholder="e.g. Qualifier 2" />
               </div>
               <div style={{ flex: 1, minWidth: 160 }}>
