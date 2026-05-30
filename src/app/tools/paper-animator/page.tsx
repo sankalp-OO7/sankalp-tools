@@ -30,8 +30,12 @@ const TEXTURES = [
 
 const inp: React.CSSProperties = {
   width: '100%', padding: '8px 12px', borderRadius: 8,
-  border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)',
+  border: '1px solid rgba(255,255,255,0.08)', background: '#181824',
   color: '#e8e8f0', fontSize: 13, outline: 'none', fontFamily: 'inherit'
+};
+const opt: React.CSSProperties = {
+  background: '#181824',
+  color: '#e8e8f0'
 };
 const lbl: React.CSSProperties = {
   fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
@@ -133,7 +137,7 @@ export default function PaperAnimatorPage() {
         breadcrumb: 'Home / Education / Frameworks',
         texture: 'aged',
         blurBody: true,
-        slideCount: 6,
+        slideCount: 4,
         blurStrength: 1.8,
       };
       t = DEFAULT_THEME;
@@ -141,6 +145,14 @@ export default function PaperAnimatorPage() {
       saveSettings(s);
       saveTheme(t);
       saveFrames(f);
+    }
+
+    // Force default only 4 slides for active users
+    const migrated = localStorage.getItem('pa_slide_count_migrated_v4');
+    if (!migrated) {
+      localStorage.setItem('pa_slide_count_migrated_v4', 'true');
+      s.slideCount = 4;
+      saveSettings(s);
     }
 
     setSettings(s); setTheme(t); setFrames(f); setHistory(loadHistory());
@@ -347,7 +359,7 @@ Rules:
                 <select style={inp} value={settings.ratio} onChange={e => {
                   updateSettings({ ...settings, ratio: e.target.value });
                 }}>
-                  {Object.keys(RATIOS).map(r => <option key={r} value={r}>{r}</option>)}
+                  {Object.keys(RATIOS).map(r => <option key={r} value={r} style={opt}>{r}</option>)}
                 </select>
               </div>
               <div style={{ flex: 1, minWidth: 160 }}>
@@ -355,7 +367,7 @@ Rules:
                 <select style={inp} value={settings.texture} onChange={e => {
                   updateSettings({ ...settings, texture: e.target.value });
                 }}>
-                  {TEXTURES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  {TEXTURES.map(t => <option key={t.value} value={t.value} style={opt}>{t.label}</option>)}
                 </select>
               </div>
             </div>

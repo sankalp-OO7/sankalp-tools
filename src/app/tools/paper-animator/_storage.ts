@@ -45,7 +45,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   texture: 'aged',
   blurBody: true,
   matchCut: true,
-  slideCount: 10,
+  slideCount: 4,
   topic: '',
   blurStrength: 1.8,
 };
