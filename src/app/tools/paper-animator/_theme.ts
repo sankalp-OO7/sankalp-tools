@@ -56,4 +56,20 @@ export const DEFAULT_FRAMES = [
     headline: 'Future Outlook for Qualifier 2',
     body: 'Looking ahead to the next decade of educational policy, Qualifier 2 is set to undergo minor refinements to incorporate digital literacy metrics. Policy advisors suggest that these upcoming adjustments will make the qualifier even more relevant in virtual and hybrid learning spaces. For now, the focus remains on ensuring that Qualifier 2 remains the gold standard of educational excellence.',
   },
+  {
+    headline: 'National Debate on Qualifier 2',
+    body: 'A heated national debate erupted in congress today regarding the funding structures tied to Qualifier 2 milestones. Several advocates argue that the requirements are overly demanding for underfunded rural school districts. However, proponents insist that maintaining strict standards for Qualifier 2 is the only viable method to raise student reading levels and logical capacities across the general public.',
+  },
+  {
+    headline: 'Qualifier 2 Professional Training',
+    body: 'Local teaching unions have announced a series of weekend workshops focused on mastering Qualifier 2 assessment methodologies. The program will cover grading rubric standardization, classroom portfolio management, and student feedback loops. Organizers expect thousands of educators to attend these sessions to prepare for the upcoming state certification audits.',
+  },
+  {
+    headline: 'Evolving Metrics for Qualifier 2',
+    body: 'An academic paper published in the Journal of Educational Policy analyzes the historical development of Qualifier 2 compliance metrics. The study suggests that while early versions were rigid, recent reforms have made it far more adaptable to creative learning styles. Researchers recommend that future compliance reports focus on long-term student success indicators under the Qualifier 2 umbrella.',
+  },
+  {
+    headline: 'Qualifier 2 Regional Compliance',
+    body: 'The final compliance report released by regional superintendents confirms that ninety-five percent of local schools have met the Qualifier 2 standard. This represents a monumental achievement for the community after three years of intensive curriculum restructuring. Administrators praised the dedication of teaching staff who worked tirelessly to implement these rigorous educational criteria.',
+  },
 ];

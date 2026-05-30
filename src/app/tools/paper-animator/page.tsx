@@ -262,10 +262,22 @@ Rules:
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#b5935a', display: 'inline-block', animation: 'pulse 2s infinite' }} />
               <span style={{ fontSize: 11, color: '#b5935a', fontFamily: 'monospace' }}>Tool 3 · Paper Animator · Match-cut ready</span>
             </div>
-            <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#e8e8f0', marginBottom: 4, letterSpacing: '-0.02em', fontFamily: 'Syne, sans-serif' }}>
-              📰 Paper Animator
-            </h1>
-            <p style={{ color: '#6b6b80', fontSize: 12 }}>Newspaper-style visual engine. Adjust sliders to see live preview update instantly.</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#e8e8f0', letterSpacing: '-0.02em', fontFamily: 'Syne, sans-serif' }}>
+                📰 Paper Animator
+              </h1>
+              <button onClick={() => generate(settings, frames, theme)} disabled={loading}
+                style={{
+                  background: 'linear-gradient(135deg, #7c6af7, #a78bfa)', color: '#fff', border: 'none',
+                  borderRadius: 10, padding: '10px 24px', fontSize: 13, fontWeight: 800,
+                  cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
+                  boxShadow: '0 0 20px rgba(124,106,247,0.25)', transition: 'all 0.15s',
+                  opacity: loading ? 0.7 : 1
+                }}>
+                {loading ? '⏳ Rendering...' : '⚡ Render Slides (Instant)'}
+              </button>
+            </div>
+            <p style={{ color: '#6b6b80', fontSize: 12 }}>Newspaper-style visual engine. Adjust settings or click Render to update preview instantly.</p>
           </div>
 
           {/* ⚡ Core Settings & Sliders Panel (Persistent & Always Visible) */}
