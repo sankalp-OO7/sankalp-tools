@@ -137,7 +137,7 @@ export default function PaperAnimatorPage() {
         breadcrumb: 'Home / Education / Frameworks',
         texture: 'aged',
         blurBody: true,
-        slideCount: 4,
+        slideCount: 6,
         blurStrength: 1.8,
       };
       t = DEFAULT_THEME;
@@ -147,11 +147,11 @@ export default function PaperAnimatorPage() {
       saveFrames(f);
     }
 
-    // Force default only 4 slides for active users
-    const migrated = localStorage.getItem('pa_slide_count_migrated_v4');
+    // Force default 6 slides for active users
+    const migrated = localStorage.getItem('pa_slide_count_migrated_v6');
     if (!migrated) {
-      localStorage.setItem('pa_slide_count_migrated_v4', 'true');
-      s.slideCount = 4;
+      localStorage.setItem('pa_slide_count_migrated_v6', 'true');
+      s.slideCount = 6;
       saveSettings(s);
     }
 
