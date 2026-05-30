@@ -33,19 +33,27 @@ export const DEFAULT_THEME: PaperTheme = {
 
 export const DEFAULT_FRAMES = [
   {
-    headline: 'Qualifier 2 in Frameworks',
-    body: 'The introduction of Qualifier 2 in modern educational frameworks has become a pivotal criteria and standard.',
+    headline: 'Qualifier 2 in Modern Frameworks',
+    body: 'The implementation guidelines for Qualifier 2 in modern educational frameworks have been officially ratified by the standards committee. Educators from across the country attended the summit to discuss how this pivotal qualifier changes student assessment rules and curriculum compliance. Under the new directive, every regional institution is required to demonstrate full compliance with Qualifier 2 within the next fiscal cycle, marking a significant evolution in national learning.',
   },
   {
-    headline: 'Qualifier 2 in Modern Curriculums',
-    body: 'This article discusses how Qualifier 2 shapes standard requirements, evaluating compliance and quality.',
+    headline: 'Assessing Qualifier 2 Impact',
+    body: 'This new comprehensive review traces the impact of Qualifier 2 on secondary education standards and classroom outcomes. Experts agree that introducing this specific qualifier creates a much more balanced assessment landscape, ensuring all students receive equitable educational feedback. As schools prepare for the upcoming audits, administrators are focusing their teacher training programs entirely on the implementation and assessment of Qualifier 2 criteria.',
   },
   {
-    headline: 'Origins of Qualifier 2',
-    body: 'This new review traces the origins of Qualifier 2 and its foundational role in contemporary teaching systems.',
+    headline: 'Qualifier 2 Classroom Guidelines',
+    body: 'A secret report leaked from the Ministry of Education outlines strategic pathways for integrating Qualifier 2 into active daily curriculums. The document highlights successful pilot programs where classrooms using these guidelines showed exceptional progress. By centering student portfolios around Qualifier 2 objectives, teachers can deliver personalized learning experiences that align perfectly with state benchmarks.',
   },
   {
-    headline: 'Qualifier 2 Guidelines',
-    body: 'Educators must strictly apply Qualifier 2 across diverse schools, ensuring all classrooms meet the new standard.',
+    headline: 'Origins of Qualifier 2 Standard',
+    body: 'Tracing back to its academic origins, Qualifier 2 was initially proposed as a minor amendment during the Geneva Educational Accord. Over the decade, it has evolved into the cornerstone of quality assurance in international schools worldwide. Scholars argue that without the structure provided by Qualifier 2, modern curriculums lack the rigorous comparative metrics needed to validate learning success.',
+  },
+  {
+    headline: 'State Audits and Qualifier 2 Rules',
+    body: 'As regional departments initiate their annual school audits, strict adherence to Qualifier 2 has emerged as the primary metric for state funding eligibility. Schools failing to meet these critical guidelines risk temporary probationary status. Department representatives will be visiting campuses to evaluate teacher portfolios and verify that Qualifier 2 metrics are fully embedded in the syllabus.',
+  },
+  {
+    headline: 'Future Outlook for Qualifier 2',
+    body: 'Looking ahead to the next decade of educational policy, Qualifier 2 is set to undergo minor refinements to incorporate digital literacy metrics. Policy advisors suggest that these upcoming adjustments will make the qualifier even more relevant in virtual and hybrid learning spaces. For now, the focus remains on ensuring that Qualifier 2 remains the gold standard of educational excellence.',
   },
 ];

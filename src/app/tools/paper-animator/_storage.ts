@@ -35,6 +35,7 @@ export interface AppSettings {
   matchCut: boolean;
   slideCount: number;
   topic: string;
+  blurStrength: number;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -44,9 +45,11 @@ export const DEFAULT_SETTINGS: AppSettings = {
   texture: 'aged',
   blurBody: true,
   matchCut: true,
-  slideCount: 4,
+  slideCount: 6,
   topic: '',
+  blurStrength: 1.8,
 };
+
 
 function safeParse<T>(key: string, fallback: T): T {
   try {
