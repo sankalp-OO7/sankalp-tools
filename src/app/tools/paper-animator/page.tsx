@@ -73,19 +73,47 @@ export default function PaperAnimatorPage() {
 
   // Load from localStorage then auto-generate with loaded or default data
   useEffect(() => {
-    const s = loadSettings();
-    const t = loadTheme();
-    const saved = loadFrames();
-    const f = saved.length > 0 ? saved : DEFAULT_FRAMES;
+    let s = loadSettings();
+    let t = loadTheme();
+    let saved = loadFrames();
+    let f = saved.length > 0 ? saved : DEFAULT_FRAMES;
+
+    // Auto-migration to Qualifier 2 if using old default values
+    if (s.keyword === 'World' || s.keyword === 'Breaking News' || f[0]?.body.includes('Global markets surged to record highs')) {
+      s = {
+        ...s,
+        keyword: 'Qualifier 2',
+        breadcrumb: 'Home / Education / Frameworks',
+        texture: 'aged',
+        blurBody: true,
+      };
+      t = DEFAULT_THEME;
+      f = DEFAULT_FRAMES;
+      saveSettings(s);
+      saveTheme(t);
+      saveFrames(f);
+    }
+
     setSettings(s); setTheme(t); setFrames(f); setHistory(loadHistory());
     setHydrated(true);
     generate(s, f, t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => { if (hydrated) saveSettings(settings); }, [settings, hydrated]);
-  useEffect(() => { if (hydrated) saveTheme(theme); }, [theme, hydrated]);
-  useEffect(() => { if (hydrated) saveFrames(frames); }, [frames, hydrated]);
+  const updateSettings = (s: typeof settings) => {
+    setSettings(s);
+    if (hydrated) saveSettings(s);
+  };
+
+  const updateTheme = (t: typeof theme) => {
+    setTheme(t);
+    if (hydrated) saveTheme(t);
+  };
+
+  const updateFrames = (fs: typeof frames) => {
+    setFrames(fs);
+    if (hydrated) saveFrames(fs);
+  };
 
   const handleGenerate = () => {
     if (!settings.keyword.trim()) { setErr('Enter a keyword to highlight.'); return; }
@@ -93,6 +121,16 @@ export default function PaperAnimatorPage() {
     if (!valid.length) { setErr('Add at least one frame with content.'); return; }
     setErr('');
     generate(settings, frames, theme);
+  };
+
+  const resetToRef = () => {
+    saveSettings(DEFAULT_SETTINGS);
+    saveTheme(DEFAULT_THEME);
+    saveFrames(DEFAULT_FRAMES);
+    setSettings(DEFAULT_SETTINGS);
+    setTheme(DEFAULT_THEME);
+    setFrames(DEFAULT_FRAMES);
+    generate(DEFAULT_SETTINGS, DEFAULT_FRAMES, DEFAULT_THEME);
   };
 
   const downloadAll = () => {
@@ -104,10 +142,14 @@ export default function PaperAnimatorPage() {
   };
 
   const restoreHistory = (e: HistoryEntry) => {
-    setSettings(prev => ({ ...prev, keyword: e.keyword, ratio: e.ratio, texture: e.texture }));
+    const s = { ...settings, keyword: e.keyword, ratio: e.ratio, texture: e.texture };
+    setSettings(s);
+    saveSettings(s);
     setGenerated(e.frameUrls.map((url, i) => ({ url, idx: i + 1 })));
     setTab('prompt');
   };
+
+
 
   // ── Shared styles ─────────────────────────────────────────────────────────
   const card: React.CSSProperties = {
@@ -173,9 +215,9 @@ export default function PaperAnimatorPage() {
               ))}
             </div>
             <div style={{ padding: '1.25rem', maxHeight: '55vh', overflowY: 'auto' }}>
-              {tab === 'prompt' && <PromptTab settings={settings} onSettingsChange={setSettings} onLoadFrames={fs => { setFrames(fs); setTab('frames'); }} />}
-              {tab === 'frames' && <FramesTab frames={frames} onChange={setFrames} />}
-              {tab === 'theme' && <ThemeTab theme={theme} onChange={setTheme} />}
+              {tab === 'prompt' && <PromptTab settings={settings} onSettingsChange={updateSettings} onLoadFrames={fs => { updateFrames(fs); setTab('frames'); }} />}
+              {tab === 'frames' && <FramesTab frames={frames} onChange={updateFrames} />}
+              {tab === 'theme' && <ThemeTab theme={theme} onChange={updateTheme} />}
               {tab === 'history' && <HistoryTab history={history} onChange={setHistory} onRestore={restoreHistory} />}
             </div>
           </div>
@@ -185,6 +227,9 @@ export default function PaperAnimatorPage() {
             <button onClick={handleGenerate} disabled={loading} style={btnPrimary}>
               {loading ? '⏳ Generating…' : '🖼  Generate Frames'}
             </button>
+            <button onClick={resetToRef} disabled={loading} style={{ ...btnOut, borderColor: 'rgba(181,147,90,0.3)', color: '#b5935a', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 20px', borderRadius: 10 }}>
+              🔄 Reset Reference Look
+            </button>
             {settings.matchCut && !loading && (
               <span style={{ fontSize: 11, color: '#10b981', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 20, padding: '4px 10px' }}>
                 ✓ Match-cut · fixed highlight position
@@ -192,6 +237,7 @@ export default function PaperAnimatorPage() {
             )}
             {err && <span style={{ color: '#e74c3c', fontSize: 12 }}>{err}</span>}
           </div>
+
         </div>
 
         {/* ── RIGHT: Live Preview (sticky) ── */}

@@ -38,8 +38,8 @@ export interface AppSettings {
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  keyword: 'World',
-  breadcrumb: 'News / Global / Home',
+  keyword: 'Qualifier 2',
+  breadcrumb: 'Home / Education / Frameworks',
   ratio: '9:16',
   texture: 'aged',
   blurBody: true,

@@ -42,7 +42,7 @@ function noise(ctx: CanvasRenderingContext2D, cw: number, ch: number, count: num
 }
 
 function crumple(ctx: CanvasRenderingContext2D, cw: number, ch: number, color: string, n: number) {
-  ctx.strokeStyle = color; ctx.lineWidth = 1;
+  ctx.strokeStyle = color; ctx.lineWidth = 1.5;
   for (let i = 0; i < n; i++) {
     ctx.beginPath();
     const x = 60 + Math.random() * (cw - 120);
@@ -72,7 +72,7 @@ export function applyTexture(ctx: CanvasRenderingContext2D, cw: number, ch: numb
       ctx.fillStyle = `rgba(${v},${Math.round(v * 0.8)},${Math.round(v * 0.5)},${a})`;
       ctx.fillRect(x, y, 1 + Math.random(), 1 + Math.random());
     }
-    crumple(ctx, cw, ch, 'rgba(100,70,30,0.18)', 10);
+    crumple(ctx, cw, ch, 'rgba(100,70,30,0.18)', 12);
   } else if (texture === 'dark') {
     ctx.fillStyle = '#1a1a18'; ctx.fillRect(0, 0, cw, ch);
     for (let i = 0; i < 35000; i++) {
@@ -128,6 +128,7 @@ export function applyTexture(ctx: CanvasRenderingContext2D, cw: number, ch: numb
 }
 
 // ── Body renderer — everything blurred except the keyword highlight ───────────
+// Centered perfectly vertically (at ch * 0.5) for the keyword line.
 export function renderBodyLines(
   ctx: CanvasRenderingContext2D,
   allLines: (string | null)[],
@@ -138,72 +139,86 @@ export function renderBodyLines(
   LINE_H: number,
   BODY: string,
   BOLD: string,
-  startY: number,
-  maxY: number,
   xBase: number,
   blurBody: boolean,
+  ch: number,
 ): void {
   const kwLower = keyword.toLowerCase();
-  let kwFound = false;
-  let y = startY;
+  let kwLineIdx = -1;
 
-  // Pass 1 — draw all text blurred (if blurBody) or faded
-  ctx.save();
-  if (blurBody) ctx.filter = 'blur(7px)';
+  // Scan to find which line index contains the keyword
   for (let i = 0; i < allLines.length; i++) {
-    if (y > maxY) break;
     const line = allLines[i];
-    if (line === null) { y += Math.round(LINE_H * 0.5); continue; }
-    const alpha = 0.55;
+    if (line && line.toLowerCase().includes(kwLower)) {
+      kwLineIdx = i;
+      break;
+    }
+  }
+
+  // Fallback if not found: center the middle line
+  if (kwLineIdx === -1) {
+    kwLineIdx = Math.floor(allLines.length / 2);
+  }
+
+  const centerY = ch * 0.5;
+
+  // Pass 1 — draw all other text lines blurred (with heavy vertical motion-like feel or standard gaussian)
+  ctx.save();
+  if (blurBody) {
+    ctx.filter = 'blur(9px)';
+  }
+  for (let i = 0; i < allLines.length; i++) {
+    if (i === kwLineIdx) continue; // Skip keyword line in blurred pass
+    const line = allLines[i];
+    if (line === null) continue;
+    const y = centerY + (i - kwLineIdx) * LINE_H;
     ctx.font = BODY;
-    ctx.fillStyle = `rgba(26,22,16,${alpha})`;
+    ctx.fillStyle = theme.bodyColor;
     ctx.fillText(line, xBase + PAD, y);
-    y += LINE_H;
   }
   ctx.restore();
 
-  // Pass 2 — redraw keyword line crisp on top with highlight
-  y = startY;
-  for (let i = 0; i < allLines.length; i++) {
-    if (y > maxY) break;
-    const line = allLines[i];
-    if (line === null) { y += Math.round(LINE_H * 0.5); continue; }
-    if (!kwFound) {
-      const kwIdx = line.toLowerCase().indexOf(kwLower);
-      if (kwIdx !== -1) {
-        kwFound = true;
-        const before = line.substring(0, kwIdx);
-        const kw = line.substring(kwIdx, kwIdx + keyword.length);
-        const after = line.substring(kwIdx + keyword.length);
-        ctx.font = BODY; const bw = ctx.measureText(before).width;
-        ctx.font = BOLD; const kwW = ctx.measureText(kw).width;
-        const hPad = 12, vPad = 8;
+  // Pass 2 — draw the keyword line completely crisp with highlighter marker behind the keyword
+  const line = allLines[kwLineIdx];
+  if (line) {
+    const y = centerY;
+    const kwIdx = line.toLowerCase().indexOf(kwLower);
 
-        // Clear the blur behind the highlight line with a solid bg strip
-        ctx.fillStyle = theme.bgColor.startsWith('#') ? theme.bgColor : '#ede8df';
-        ctx.fillRect(xBase + PAD - 2, y - FS - 2, (xBase === 0 ? ctx.canvas.width - PAD * 2 + 4 : kwW + bw + 100), LINE_H + 4);
+    if (kwIdx !== -1) {
+      const before = line.substring(0, kwIdx);
+      const kw = line.substring(kwIdx, kwIdx + keyword.length);
+      const after = line.substring(kwIdx + keyword.length);
 
-        // Highlight rect — slightly rounded feel via shadow
-        ctx.save();
-        ctx.shadowColor = theme.highlightColor;
-        ctx.shadowBlur = 4;
-        ctx.fillStyle = theme.highlightColor;
-        ctx.fillRect(xBase + PAD + bw - hPad, y - FS + vPad / 2, kwW + hPad * 2, FS + vPad);
-        ctx.restore();
+      ctx.font = BODY; const bw = ctx.measureText(before).width;
+      ctx.font = BOLD; const kwW = ctx.measureText(kw).width;
 
-        // Redraw the full line crisp
-        ctx.font = BODY; ctx.fillStyle = theme.bodyColor;
-        ctx.fillText(before, xBase + PAD, y);
-        ctx.font = BOLD; ctx.fillStyle = theme.highlightTextColor;
-        ctx.fillText(kw, xBase + PAD + bw, y);
-        ctx.font = BODY; ctx.fillStyle = theme.bodyColor;
-        ctx.fillText(after, xBase + PAD + bw + kwW, y);
-      }
+      // Draw beautiful highlighter marker behind the keyword (rounded line cap, slightly wobbly/natural)
+      ctx.save();
+      ctx.strokeStyle = theme.highlightColor;
+      ctx.lineWidth = FS * 1.15;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      // Draw stroke with a tiny natural hand-drawn wobble
+      ctx.moveTo(xBase + PAD + bw - 4, y - FS * 0.35 + 1);
+      ctx.lineTo(xBase + PAD + bw + kwW + 4, y - FS * 0.35 - 1);
+      ctx.stroke();
+      ctx.restore();
+
+      // Render the line text crisp on top
+      ctx.font = BODY; ctx.fillStyle = theme.bodyColor;
+      ctx.fillText(before, xBase + PAD, y);
+      ctx.font = BOLD; ctx.fillStyle = theme.highlightTextColor;
+      ctx.fillText(kw, xBase + PAD + bw, y);
+      ctx.font = BODY; ctx.fillStyle = theme.bodyColor;
+      ctx.fillText(after, xBase + PAD + bw + kwW, y);
+    } else {
+      // Crisp fallback if keyword not matched but centered
+      ctx.font = BODY; ctx.fillStyle = theme.bodyColor;
+      ctx.fillText(line, xBase + PAD, y);
     }
-    y += LINE_H;
   }
 }
-
 
 // ── Main draw function ────────────────────────────────────────────────────────
 // matchCut = true: same font for all frames + keyword at deterministic Y position
@@ -225,52 +240,73 @@ export function drawFrame(opts: {
   const canvas = document.createElement('canvas');
   canvas.width = cw; canvas.height = ch;
   const ctx = canvas.getContext('2d')!;
-  applyTexture(ctx, cw, ch, texture, theme);
-  const f = fontObj.css;
 
+  // 1. Draw base color gradient
+  if (theme.useGradient) {
+    const g = ctx.createLinearGradient(0, 0, 0, ch);
+    g.addColorStop(0, theme.bgColor); g.addColorStop(1, theme.bgGradientEnd);
+    ctx.fillStyle = g;
+  } else {
+    ctx.fillStyle = theme.bgColor;
+  }
+  ctx.fillRect(0, 0, cw, ch);
+
+  const f = fontObj.css;
   const sentences = (t: string) =>
     t.trim().split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
 
   if (ratio === '9:16') {
     const s = cw / 720;
-    const FS = Math.round(36 * s), LINE_H = Math.round(FS * 1.5);
+    const FS = Math.round(38 * s), LINE_H = Math.round(FS * 1.55);
     const HL_FS = Math.round(50 * s), BC_FS = Math.round(24 * s);
     const PAD = Math.round(52 * s), MAXW = cw - PAD * 2;
     const BODY = `${FS}px ${f}`, BOLD = `bold ${FS}px ${f}`;
 
-    // ── Fixed layout positions (match-cut safe) ───────────────────────────
-    const Y_BC = Math.round(110 * s);         // breadcrumb baseline
-    const Y_RULE1 = Y_BC + Math.round(42 * s);  // rule after breadcrumb
-    const Y_HL_START = Y_RULE1 + Math.round(60 * s); // headline start
-    // headline max 2 lines, each HL_FS*1.22 tall
-    const MAX_HL_LINES = 2;
-    const HL_LINE_H = Math.round(HL_FS * 1.22);
-    const Y_BODY_START = Y_HL_START + MAX_HL_LINES * HL_LINE_H + Math.round(30 * s);
-
-    // breadcrumb
+    // Draw breadcrumb and rule (slightly blurred if blurBody)
+    ctx.save();
+    if (blurBody) ctx.filter = 'blur(8px)';
+    const Y_BC = Math.round(110 * s);
     ctx.font = `${BC_FS}px ${f}`; ctx.fillStyle = theme.breadcrumbColor;
     ctx.fillText(breadcrumb, PAD, Y_BC);
-    // rule
-    ctx.strokeStyle = theme.dividerColor; ctx.lineWidth = 1;
+    const Y_RULE1 = Y_BC + Math.round(42 * s);
+    ctx.strokeStyle = theme.dividerColor; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(PAD, Y_RULE1); ctx.lineTo(cw - PAD, Y_RULE1); ctx.stroke();
-    // headline (clamped to MAX_HL_LINES)
+    ctx.restore();
+
+    // Draw headline (completely motion-blurred/gaussian-blurred to draw attention to body keyword)
+    ctx.save();
+    if (blurBody) ctx.filter = 'blur(8px)';
+    const Y_HL_START = Y_RULE1 + Math.round(60 * s);
+    const MAX_HL_LINES = 2;
+    const HL_LINE_H = Math.round(HL_FS * 1.22);
     ctx.font = `bold ${HL_FS}px ${f}`; ctx.fillStyle = theme.headlineColor;
     const hlLines = wrapText(ctx, headline, MAXW).slice(0, MAX_HL_LINES);
     hlLines.forEach((ln, i) => ctx.fillText(ln, PAD, Y_HL_START + i * HL_LINE_H));
-    // second rule
     const Y_RULE2 = Y_HL_START + MAX_HL_LINES * HL_LINE_H + Math.round(8 * s);
-    ctx.strokeStyle = theme.dividerColor; ctx.lineWidth = 0.5;
+    ctx.strokeStyle = theme.dividerColor; ctx.lineWidth = 0.8;
     ctx.beginPath(); ctx.moveTo(PAD, Y_RULE2); ctx.lineTo(cw - PAD, Y_RULE2); ctx.stroke();
-    // body
+    ctx.restore();
+
+    // Draw body lines with perfect vertical centering on the keyword line
     const allLines: (string | null)[] = []; ctx.font = BODY;
-    for (const st of sentences(bodyText)) { wrapText(ctx, st, MAXW).forEach(l => allLines.push(l)); allLines.push(null); }
-    renderBodyLines(ctx, allLines, keyword, theme, PAD, FS, LINE_H, BODY, BOLD, Y_BODY_START, ch - Math.round(70 * s), 0, blurBody);
-    // font tag bottom right
+    for (const st of sentences(bodyText)) {
+      wrapText(ctx, st, MAXW).forEach(l => allLines.push(l));
+      allLines.push(null);
+    }
+    // Clean trailing null
+    if (allLines[allLines.length - 1] === null) allLines.pop();
+
+    renderBodyLines(ctx, allLines, keyword, theme, PAD, FS, LINE_H, BODY, BOLD, 0, blurBody, ch);
+
+    // Font name bottom tag
+    ctx.save();
+    if (blurBody) ctx.filter = 'blur(8px)';
     ctx.font = `italic ${Math.round(18 * s)}px ${f}`; ctx.fillStyle = theme.fontNameColor;
     if (!matchCut) {
       const fw = ctx.measureText(fontObj.name).width;
       ctx.fillText(fontObj.name, cw - PAD - fw, ch - Math.round(36 * s));
     }
+    ctx.restore();
 
   } else if (ratio === '16:9') {
     const s = ch / 720;
@@ -281,54 +317,94 @@ export function drawFrame(opts: {
     const leftW = Math.round(cw * 0.43), colGap = Math.round(cw * 0.04);
     const rightX = leftW + colGap, rightW = cw - rightX - PAD;
 
+    // Draw left column (blurred)
+    ctx.save();
+    if (blurBody) ctx.filter = 'blur(8px)';
     const Y_BC = PAD + BC_FS;
-    const Y_RULE = Y_BC + Math.round(18 * s);
-    const Y_HL = Y_RULE + Math.round(26 * s);
-    const MAX_HL = 3, HL_H = Math.round(HL_FS * 1.18);
-    const Y_BODY = PAD + FS;
-
     ctx.font = `${BC_FS}px ${f}`; ctx.fillStyle = theme.breadcrumbColor; ctx.fillText(breadcrumb, PAD, Y_BC);
-    ctx.strokeStyle = theme.dividerColor; ctx.lineWidth = 1;
+    ctx.strokeStyle = theme.dividerColor; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(leftW, PAD); ctx.lineTo(leftW, ch - PAD); ctx.stroke();
+    const Y_RULE = Y_BC + Math.round(18 * s);
     ctx.beginPath(); ctx.moveTo(PAD, Y_RULE); ctx.lineTo(leftW - PAD, Y_RULE); ctx.stroke();
     ctx.font = `bold ${HL_FS}px ${f}`; ctx.fillStyle = theme.headlineColor;
-    wrapText(ctx, headline, leftW - PAD * 2).slice(0, MAX_HL).forEach((ln, i) => ctx.fillText(ln, PAD, Y_HL + i * HL_H));
+    const MAX_HL = 3, HL_H = Math.round(HL_FS * 1.18);
+    wrapText(ctx, headline, leftW - PAD * 2).slice(0, MAX_HL).forEach((ln, i) => ctx.fillText(ln, PAD, Y_RULE + Math.round(26 * s) + i * HL_H));
     ctx.font = `italic ${Math.round(16 * s)}px ${f}`; ctx.fillStyle = theme.fontNameColor;
     if (!matchCut) ctx.fillText(fontObj.name, PAD, ch - Math.round(28 * s));
+    ctx.restore();
+
+    // Draw right column body lines with perfect vertical centering on keyword line
     const allLines: (string | null)[] = []; ctx.font = BODY;
-    for (const st of sentences(bodyText)) { wrapText(ctx, st, rightW).forEach(l => allLines.push(l)); allLines.push(null); }
-    renderBodyLines(ctx, allLines, keyword, theme, 0, FS, LINE_H, BODY, BOLD, Y_BODY, ch - PAD, rightX, blurBody);
+    for (const st of sentences(bodyText)) {
+      wrapText(ctx, st, rightW).forEach(l => allLines.push(l));
+      allLines.push(null);
+    }
+    if (allLines[allLines.length - 1] === null) allLines.pop();
+
+    renderBodyLines(ctx, allLines, keyword, theme, 0, FS, LINE_H, BODY, BOLD, rightX, blurBody, ch);
 
   } else {
-    // 4:5 and 1:1
+    // 4:5 and 1:1 ratios
     const s = cw / 720;
     const is45 = ratio === '4:5';
     const FS = Math.round((is45 ? 32 : 30) * s), LINE_H = Math.round(FS * 1.5);
     const HL_FS = Math.round((is45 ? 54 : 50) * s), BC_FS = Math.round(22 * s);
     const PAD = Math.round(52 * s), MAXW = cw - PAD * 2;
     const BODY = `${FS}px ${f}`, BOLD = `bold ${FS}px ${f}`;
+
+    ctx.save();
+    if (blurBody) ctx.filter = 'blur(8px)';
     if (is45) { ctx.fillStyle = 'rgba(26,22,16,0.07)'; ctx.fillRect(0, 0, cw, Math.round(7 * s)); }
     const Y_BC = Math.round(76 * s);
-    const Y_RULE = Y_BC + Math.round(32 * s);
-    const Y_HL = Y_RULE + Math.round(40 * s);
-    const MAX_HL = 2, HL_H = Math.round(HL_FS * 1.15);
-    const Y_BODY = Y_HL + MAX_HL * HL_H + Math.round(22 * s);
-
     ctx.font = `${BC_FS}px ${f}`; ctx.fillStyle = theme.breadcrumbColor; ctx.fillText(breadcrumb, PAD, Y_BC);
-    ctx.strokeStyle = theme.dividerColor; ctx.lineWidth = 1;
+    const Y_RULE = Y_BC + Math.round(32 * s);
+    ctx.strokeStyle = theme.dividerColor; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(PAD, Y_RULE); ctx.lineTo(cw - PAD, Y_RULE); ctx.stroke();
     ctx.font = `bold ${HL_FS}px ${f}`; ctx.fillStyle = theme.headlineColor;
-    wrapText(ctx, headline, MAXW).slice(0, MAX_HL).forEach((ln, i) => ctx.fillText(ln, PAD, Y_HL + i * HL_H));
-    if (!is45) {
-      ctx.strokeStyle = theme.dividerColor; ctx.lineWidth = 0.5;
-      ctx.beginPath(); ctx.moveTo(PAD, Y_BODY - Math.round(14 * s)); ctx.lineTo(cw - PAD, Y_BODY - Math.round(14 * s)); ctx.stroke();
-    }
+    const MAX_HL = 2, HL_H = Math.round(HL_FS * 1.15);
+    wrapText(ctx, headline, MAXW).slice(0, MAX_HL).forEach((ln, i) => ctx.fillText(ln, PAD, Y_RULE + Math.round(40 * s) + i * HL_H));
+    ctx.restore();
+
     const allLines: (string | null)[] = []; ctx.font = BODY;
-    for (const st of sentences(bodyText)) { wrapText(ctx, st, MAXW).forEach(l => allLines.push(l)); allLines.push(null); }
-    renderBodyLines(ctx, allLines, keyword, theme, PAD, FS, LINE_H, BODY, BOLD, Y_BODY, ch - Math.round(55 * s), 0, blurBody);
-    ctx.font = `italic ${Math.round(17 * s)}px ${f}`; ctx.fillStyle = theme.fontNameColor;
-    if (!matchCut) { const fw = ctx.measureText(fontObj.name).width; ctx.fillText(fontObj.name, cw - PAD - fw, ch - Math.round(30 * s)); }
+    for (const st of sentences(bodyText)) {
+      wrapText(ctx, st, MAXW).forEach(l => allLines.push(l));
+      allLines.push(null);
+    }
+    if (allLines[allLines.length - 1] === null) allLines.pop();
+
+    renderBodyLines(ctx, allLines, keyword, theme, PAD, FS, LINE_H, BODY, BOLD, 0, blurBody, ch);
   }
+
+  // 3. Draw newspaper crumple lines, grid or textures ON TOP using transparency to blend realistically
+  ctx.save();
+  ctx.globalCompositeOperation = 'multiply';
+  if (texture === 'aged') {
+    // Beautiful, high-contrast creases crossing the text
+    crumple(ctx, cw, ch, 'rgba(95,65,25,0.22)', 14);
+  } else if (texture === 'classic' || texture === 'torn') {
+    crumple(ctx, cw, ch, 'rgba(100,90,75,0.18)', 10);
+  }
+  ctx.restore();
+
+  // 4. Apply grain noise & vignette ON TOP
+  if (texture === 'aged') {
+    // Strong vintage vignette overlay
+    const vigGrad = ctx.createRadialGradient(cw * 0.5, ch * 0.5, cw * 0.25, cw * 0.5, ch * 0.5, cw * 0.9);
+    vigGrad.addColorStop(0, 'rgba(0,0,0,0)');
+    vigGrad.addColorStop(1, `rgba(40,25,8,${theme.vignetteOpacity * 1.25})`);
+    ctx.fillStyle = vigGrad; ctx.fillRect(0, 0, cw, ch);
+  } else {
+    const vigGrad = ctx.createRadialGradient(cw * 0.5, ch * 0.5, cw * 0.3, cw * 0.5, ch * 0.5, cw * 0.9);
+    vigGrad.addColorStop(0, 'rgba(0,0,0,0)');
+    const vigRgb = theme.vignetteColor.startsWith('rgb(')
+      ? theme.vignetteColor.replace('rgb(', 'rgba(').replace(')', `,${theme.vignetteOpacity})`)
+      : `rgba(0,0,0,${theme.vignetteOpacity})`;
+    vigGrad.addColorStop(1, vigRgb);
+    ctx.fillStyle = vigGrad; ctx.fillRect(0, 0, cw, ch);
+  }
+
+  // Draw noise grain on top
+  noise(ctx, cw, ch, 35000, theme.noiseOpacity * 1.2);
 
   return canvas.toDataURL('image/png');
 }

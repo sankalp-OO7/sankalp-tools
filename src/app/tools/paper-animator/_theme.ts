@@ -14,38 +14,38 @@ export interface PaperTheme {
   noiseOpacity: number;
 }
 
-// Default = aged newspaper look matching the reference image
+// Default = aged newspaper look matching the reference image perfectly
 export const DEFAULT_THEME: PaperTheme = {
-  bgColor: '#d9c9a3',
-  bgGradientEnd: '#a8905c',
+  bgColor: '#d8cba8',
+  bgGradientEnd: '#ad9b6d',
   useGradient: true,
   headlineColor: '#1a1208',
-  bodyColor: 'rgba(20,16,8,0.78)',
-  breadcrumbColor: 'rgba(50,38,15,0.50)',
-  highlightColor: '#f5e642',
-  highlightTextColor: '#1a1208',
-  dividerColor: 'rgba(50,38,15,0.20)',
-  fontNameColor: 'rgba(50,38,15,0.28)',
-  vignetteColor: 'rgb(26,16,4)',
-  vignetteOpacity: 0.38,
+  bodyColor: 'rgba(20,16,8,0.85)',
+  breadcrumbColor: 'rgba(50,38,15,0.60)',
+  highlightColor: 'rgba(242,222,46,0.80)', // Bright authentic translucent highlighter yellow
+  highlightTextColor: '#000000',
+  dividerColor: 'rgba(50,38,15,0.22)',
+  fontNameColor: 'rgba(50,38,15,0.30)',
+  vignetteColor: 'rgb(24,14,4)',
+  vignetteOpacity: 0.42,
   noiseOpacity: 0.08,
 };
 
 export const DEFAULT_FRAMES = [
   {
-    headline: 'World Markets Hit Record Highs',
-    body: 'Global markets surged to all-time highs today as investors reacted positively to economic data. Analysts say the World economy continues to show resilience against headwinds.',
+    headline: 'Qualifier 2 in Frameworks',
+    body: 'The introduction of Qualifier 2 in modern educational frameworks has become a pivotal criteria and standard.',
   },
   {
-    headline: 'World Leaders Convene in Geneva',
-    body: 'The annual World summit in Geneva brought together heads of state from over 80 nations. Discussions centered on climate, trade, and the path to a sustainable World order.',
+    headline: 'Qualifier 2 in Modern Curriculums',
+    body: 'This article discusses how Qualifier 2 shapes standard requirements, evaluating compliance and quality.',
   },
   {
-    headline: 'New World Heritage Sites Announced',
-    body: 'UNESCO unveiled twelve new World Heritage Sites this year, spanning four continents. The additions highlight humanity\'s shared commitment to preserving our World\'s cultural legacy.',
+    headline: 'Origins of Qualifier 2',
+    body: 'This new review traces the origins of Qualifier 2 and its foundational role in contemporary teaching systems.',
   },
   {
-    headline: 'World Cup Fever Grips the Globe',
-    body: 'As the World Cup draws near, excitement is building across stadiums and screens worldwide. The tournament promises to be the most-watched World sporting event in history.',
+    headline: 'Qualifier 2 Guidelines',
+    body: 'Educators must strictly apply Qualifier 2 across diverse schools, ensuring all classrooms meet the new standard.',
   },
 ];
