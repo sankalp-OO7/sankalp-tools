@@ -49,6 +49,25 @@ const tools: Tool[] = [
     category: 'Content',
   },
   {
+    id: 'paper-animator',
+    label: 'Paper Animator',
+    description: 'Generate newspaper-style keyword highlight frames. Pick textures, customise themes via JSON, and export PNGs for reels & stories.',
+    href: '/tools/paper-animator',
+    badge: 'NEW',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-7 h-7">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <path d="M3 9h18"/>
+        <path d="M9 3v6"/>
+        <path d="M7 14h6"/>
+        <path d="M7 17h10"/>
+      </svg>
+    ),
+    gradient: 'from-stone-600/20 to-yellow-800/10',
+    glow: '#b5935a',
+    category: 'Content',
+  },
+  {
     id: 'coming-soon-1',
     label: 'Image Compressor',
     description: 'Compress and resize images locally. Supports WebP, JPEG, PNG.',
@@ -105,7 +124,7 @@ const tools: Tool[] = [
 ];
 
 const stats = [
-  { label: 'Tools Available', value: '2', icon: '🛠️', sub: '+2 coming soon' },
+  { label: 'Tools Available', value: '3', icon: '🛠️', sub: '+2 coming soon' },
   { label: 'Runs in Browser', value: '100%', icon: '🔒', sub: 'No data leaves your device' },
   { label: 'Cost', value: '$0', icon: '✨', sub: 'Forever free' },
 ];

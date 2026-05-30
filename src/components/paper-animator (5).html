@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Paper Animator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Merriweather:wght@400;700&family=Lora:wght@400;700&family=EB+Garamond:wght@400;700&family=Cormorant+Garamond:wght@400;700&family=Libre+Baskerville:wght@400;700&family=Crimson+Text:wght@400;700&family=PT+Serif:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f3ef;min-height:100vh;color:#1a1612}
+  header{background:#1a1612;color:#f5e642;padding:1.2rem 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  header h1{font-size:1.4rem;font-weight:700}
+  header p{font-size:0.82rem;color:rgba(245,230,66,0.6);margin-top:2px}
+  .container{max-width:920px;margin:0 auto;padding:2rem 1.5rem}
+  .card{background:#fff;border-radius:12px;border:1px solid #e0ddd8;padding:1.5rem;margin-bottom:1.5rem}
+  .card-title{font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#999;margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+  .badge{font-size:10px;background:#1a1612;color:#f5e642;padding:2px 8px;border-radius:20px;font-weight:700;letter-spacing:0.3px}
+  .row{display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+  .field{flex:1;min-width:180px;display:flex;flex-direction:column;gap:5px}
+  label{font-size:12px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.4px}
+  input[type="text"],select,textarea{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;background:#fafaf8;color:#1a1612;outline:none;font-family:inherit;transition:border-color 0.2s}
+  input:focus,select:focus,textarea:focus{border-color:#1a1612;background:#fff}
+  textarea{resize:vertical}
+
+  /* Step indicator */
+  .steps{display:flex;gap:0;margin-bottom:1.5rem;border-radius:10px;overflow:hidden;border:1px solid #e0ddd8}
+  .step{flex:1;padding:10px 8px;text-align:center;font-size:12px;font-weight:600;background:#fafaf8;color:#bbb;border-right:1px solid #e0ddd8;cursor:default;transition:all 0.2s}
+  .step:last-child{border-right:none}
+  .step.active{background:#1a1612;color:#f5e642}
+  .step.done{background:#f0ece4;color:#888}
+  .step-num{display:block;font-size:18px;margin-bottom:2px}
+
+  /* Prompt box */
+  .prompt-box{background:#1a1612;color:#f0ece4;border-radius:10px;padding:1.2rem;font-family:'Courier New',monospace;font-size:12.5px;line-height:1.7;white-space:pre-wrap;word-break:break-word;max-height:260px;overflow-y:auto;position:relative;margin-bottom:10px}
+  .copy-btn{position:absolute;top:10px;right:10px;background:#f5e642;color:#1a1612;border:none;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+  .copy-btn:hover{opacity:0.85}
+
+  /* JSON paste area */
+  .paste-area{width:100%;min-height:140px;padding:12px;border:2px dashed #ddd;border-radius:10px;font-size:13px;font-family:'Courier New',monospace;background:#fafaf8;color:#1a1612;outline:none;resize:vertical;transition:border-color 0.2s}
+  .paste-area:focus{border-color:#1a1612;background:#fff}
+  .paste-area.valid{border-color:#27ae60;background:#f0faf4}
+  .paste-area.invalid{border-color:#e74c3c;background:#fdf0f0}
+
+  /* Frame cards */
+  .frame-input{border:1px solid #e8e5e0;border-radius:10px;padding:1rem;margin-bottom:10px;background:#fafaf8}
+  .frame-input-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px}
+  .frame-input-header .left{display:flex;align-items:center;gap:8px}
+  .frame-num{font-size:12px;font-weight:700;color:#bbb;text-transform:uppercase}
+  .font-tag{font-size:11px;color:#f5e642;background:#1a1612;padding:2px 8px;border-radius:4px;font-weight:600}
+  .remove-btn{font-size:12px;color:#c0392b;background:none;border:none;cursor:pointer;font-family:inherit}
+
+  .add-frame-btn{width:100%;padding:10px;border:1.5px dashed #ccc;border-radius:8px;background:none;color:#aaa;font-size:14px;cursor:pointer;font-family:inherit;transition:all 0.15s;margin-top:4px}
+  .add-frame-btn:hover{border-color:#1a1612;color:#1a1612;background:#f0ece4}
+
+  button.primary{background:#1a1612;color:#f5e642;border:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:opacity 0.2s;font-family:inherit}
+  button.primary:hover{opacity:0.85}
+  button.secondary{background:transparent;color:#1a1612;border:1px solid #ccc;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:background 0.15s}
+  button.secondary:hover{background:#f0ece4}
+  button.outline-yellow{background:transparent;color:#1a1612;border:2px solid #f5e642;padding:10px 22px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.15s}
+  button.outline-yellow:hover{background:#f5e642}
+
+  .err{color:#c0392b;font-size:13px;margin-top:8px}
+  .success{color:#27ae60;font-size:13px;margin-top:8px;font-weight:600}
+  .tip{font-size:12px;color:#bbb;margin-top:4px;line-height:1.5}
+
+  /* Output */
+  .frames-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-top:1rem}
+  .frame-wrap{display:flex;flex-direction:column;gap:6px}
+  .frame-wrap img{width:100%;border-radius:10px;border:1px solid #e0ddd8;display:block;cursor:pointer}
+  .frame-wrap img:hover{box-shadow:0 4px 16px rgba(0,0,0,0.12)}
+  .frame-label{font-size:11px;color:#aaa;text-align:center}
+  .dl-btn{width:100%}
+  .dl-all-row{display:flex;gap:10px;align-items:center;margin-bottom:1rem}
+  #outputCard{display:none}
+
+  .preview-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:14px}
+  .preview-overlay.active{display:flex}
+  .preview-overlay img{max-width:88vw;max-height:88vh;border-radius:12px;object-fit:contain}
+  .preview-close{color:#fff;font-size:13px;cursor:pointer;background:rgba(255,255,255,0.15);border:none;padding:8px 22px;border-radius:6px;font-family:inherit}
+
+  .tab-btns{display:flex;gap:8px;margin-bottom:1rem}
+  .tab-btn{padding:7px 16px;border-radius:6px;border:1px solid #ddd;background:#fafaf8;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:#888;transition:all 0.15s}
+  .tab-btn.active{background:#1a1612;color:#f5e642;border-color:#1a1612}
+  .tab-content{display:none}
+  .tab-content.active{display:block}
+
+  .chatgpt-link{display:inline-flex;align-items:center;gap:6px;background:#10a37f;color:#fff;text-decoration:none;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;margin-top:8px;transition:opacity 0.2s}
+  .chatgpt-link:hover{opacity:0.85}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>📰 Paper Animator</h1>
+    <p>Newspaper-style keyword highlight frames</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- STEP 1: Settings -->
+  <div class="card">
+    <div class="card-title">⚙️ Settings</div>
+    <div class="row">
+      <div class="field">
+        <label>Keyword to Highlight</label>
+        <input type="text" id="keyword" placeholder="e.g. Rajasthan Royals" value="Rajasthan Royals" oninput="refreshPrompt()" />
+        <p class="tip">Gets yellow highlight in every frame</p>
+      </div>
+      <div class="field">
+        <label>Breadcrumb</label>
+        <input type="text" id="breadcrumb" value="Something / Here / Home" oninput="refreshPrompt()" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Number of Frames</label>
+        <select id="frameCount" oninput="refreshPrompt()">
+          <option value="4">4 frames</option>
+          <option value="6">6 frames</option>
+          <option value="8">8 frames</option>
+          <option value="10">10 frames</option>
+          <option value="12">12 frames</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Aspect Ratio</label>
+        <select id="aspectRatio">
+          <option value="9:16">9:16 — Reels / Stories (portrait)</option>
+          <option value="16:9">16:9 — YouTube / Landscape</option>
+          <option value="4:5">4:5 — Instagram Feed (portrait)</option>
+          <option value="1:1">1:1 — Square</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Topic (optional)</label>
+        <input type="text" id="topic" placeholder="e.g. IPL 2024 season highlights" oninput="refreshPrompt()" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Paper Texture</label>
+        <select id="paperTexture" onchange="onTextureChange()">
+          <option value="classic">📰 Classic Newsprint</option>
+          <option value="aged">🟤 Aged / Yellowed</option>
+          <option value="dark">🖤 Dark Newspaper</option>
+          <option value="grid">📐 Graph / Grid Paper</option>
+          <option value="lined">📝 Lined Paper</option>
+          <option value="torn">✂️ Torn Edge</option>
+          <option value="custom">🖼 Custom Image(s)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Texture Preview</label>
+        <canvas id="texturePreview" width="300" height="80" style="width:100%;border-radius:8px;border:1px solid #ddd;cursor:pointer" title="Click to refresh preview" onclick="updateTexturePreview()"></canvas>
+      </div>
+    </div>
+    <!-- Custom texture upload — shown only when Custom selected -->
+    <div class="row" id="customTextureRow" style="display:none">
+      <div class="field">
+        <label>Upload Texture Image(s)</label>
+        <div id="uploadDropzone" style="border:2px dashed #ccc;border-radius:10px;padding:18px 16px;text-align:center;cursor:pointer;background:#fafaf8;transition:all 0.15s" onclick="document.getElementById('textureFileInput').click()" ondragover="event.preventDefault();this.style.borderColor='#1a1612'" ondragleave="this.style.borderColor='#ccc'" ondrop="handleTextureDrop(event)">
+          <div style="font-size:28px;margin-bottom:6px">🖼</div>
+          <div style="font-size:13px;color:#888">Click or drag &amp; drop image(s) here</div>
+          <div style="font-size:11px;color:#bbb;margin-top:4px">PNG, JPG, WEBP — upload multiple for different frames</div>
+        </div>
+        <input type="file" id="textureFileInput" accept="image/*" multiple style="display:none" onchange="handleTextureUpload(this.files)"/>
+      </div>
+      <div class="field">
+        <label>Uploaded Textures</label>
+        <div id="uploadedTextureList" style="display:flex;flex-wrap:wrap;gap:8px;min-height:40px;align-items:flex-start">
+          <span style="font-size:12px;color:#bbb;margin-top:8px">No images uploaded yet</span>
+        </div>
+        <p style="font-size:11px;color:#aaa;margin-top:6px">If 1 image → auto-rotated (flip, mirror, rotate) per frame.<br>If multiple → each frame cycles through them.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: Get content -->
+  <div class="card">
+    <div class="card-title">✍️ Frame Content <span class="badge">Step 1 → 2 → 3</span></div>
+
+    <div class="tab-btns">
+      <button class="tab-btn active" onclick="switchTab('ai')">🤖 Use ChatGPT / AI</button>
+      <button class="tab-btn" onclick="switchTab('manual')">✏️ Write Manually</button>
+    </div>
+
+    <!-- AI TAB -->
+    <div class="tab-content active" id="tab-ai">
+
+      <p style="font-size:13px;color:#555;margin-bottom:12px;line-height:1.6">
+        Copy the prompt below → paste in ChatGPT → copy the JSON response → paste it back here.
+      </p>
+
+      <label style="margin-bottom:6px;display:block">Step 1 — Copy this prompt and send to ChatGPT</label>
+      <div style="position:relative">
+        <div class="prompt-box" id="promptBox"></div>
+        <button class="copy-btn" onclick="copyPrompt()">Copy Prompt</button>
+      </div>
+
+      <a class="chatgpt-link" href="https://chat.openai.com" target="_blank">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M22.28 9.29a5.88 5.88 0 0 0-.51-4.83 6 6 0 0 0-6.44-2.87A5.93 5.93 0 0 0 10.88 0a6 6 0 0 0-5.72 4.16 5.94 5.94 0 0 0-3.97 2.88 6 6 0 0 0 .74 7.04 5.88 5.88 0 0 0 .51 4.83 6 6 0 0 0 6.44 2.87A5.93 5.93 0 0 0 13.12 24a6 6 0 0 0 5.72-4.16 5.94 5.94 0 0 0 3.97-2.88 6 6 0 0 0-.53-7.67zM13.12 22.5a4.5 4.5 0 0 1-2.89-1.05l.14-.08 4.8-2.77a.77.77 0 0 0 .39-.67v-6.78l2.03 1.17a.07.07 0 0 1 .04.06v5.6a4.51 4.51 0 0 1-4.51 4.52zm-9.68-4.14a4.49 4.49 0 0 1-.54-3.03l.14.09 4.8 2.77a.79.79 0 0 0 .78 0l5.86-3.38v2.34a.08.08 0 0 1-.03.06l-4.85 2.8a4.51 4.51 0 0 1-6.16-1.65zm-1.26-10.5a4.49 4.49 0 0 1 2.35-1.98v5.7a.77.77 0 0 0 .39.67l5.86 3.38-2.03 1.17a.08.08 0 0 1-.07 0L3.83 14a4.51 4.51 0 0 1-.65-6.14zm16.67 3.87-5.86-3.38 2.03-1.17a.08.08 0 0 1 .07 0l4.75 2.74a4.51 4.51 0 0 1-.7 8.13v-5.7a.77.77 0 0 0-.29-.62zm2.02-3.04-.14-.09-4.8-2.77a.79.79 0 0 0-.78 0L9.29 9.71V7.37a.08.08 0 0 1 .03-.06l4.85-2.8a4.51 4.51 0 0 1 6.7 4.68zm-12.69 4.17-2.03-1.17a.07.07 0 0 1-.04-.06v-5.6a4.51 4.51 0 0 1 7.4-3.47l-.14.08-4.8 2.77a.77.77 0 0 0-.39.67zm1.1-2.37 2.61-1.5 2.61 1.5v3l-2.61 1.5-2.61-1.5z"/></svg>
+        Open ChatGPT
+      </a>
+
+      <div style="margin-top:1.2rem">
+        <label style="margin-bottom:6px;display:block">Step 2 — Paste ChatGPT's JSON response here</label>
+        <textarea class="paste-area" id="jsonPaste" placeholder='Paste the JSON from ChatGPT here...&#10;&#10;It should look like:&#10;{&#10;  "breadcrumb": "...",&#10;  "frames": [...]&#10;}' oninput="validateJson(this)"></textarea>
+        <div id="jsonStatus"></div>
+      </div>
+
+      <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <button class="primary" onclick="loadFromJson()">Load Frames from JSON</button>
+        <button class="secondary" onclick="loadExample()">Load Example</button>
+      </div>
+    </div>
+
+    <!-- MANUAL TAB -->
+    <div class="tab-content" id="tab-manual">
+      <div id="framesContainer"></div>
+      <button class="add-frame-btn" onclick="addFrame()">+ Add Frame</button>
+    </div>
+
+  </div>
+
+  <!-- STEP 3: Generate -->
+  <div class="card" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <button class="primary" onclick="generate()">🖼 Generate Images</button>
+    <div class="err" id="err"></div>
+  </div>
+
+  <!-- Output -->
+  <div class="card" id="outputCard">
+    <div class="card-title">✅ Generated Frames</div>
+    <div class="dl-all-row">
+      <button class="secondary" onclick="downloadAll()">↓ Download All PNGs</button>
+    </div>
+    <div class="frames-grid" id="grid"></div>
+  </div>
+
+</div>
+
+<div class="preview-overlay" id="preview" onclick="closePreview()">
+  <img id="previewImg" src="" />
+  <button class="preview-close">✕ Close</button>
+</div>
+
+<script>
+const RATIOS={"9:16":{w:720,h:1280},"16:9":{w:1280,h:720},"4:5":{w:720,h:900},"1:1":{w:720,h:720}};
+function getDims(){return RATIOS[document.getElementById("aspectRatio")?.value||"9:16"]||RATIOS["9:16"];}
+let frameIdCounter=0,generatedUrls=[];
+
+const FONTS=[
+  {name:'Playfair Display', css:'"Playfair Display",Georgia,serif'},
+  {name:'Merriweather',     css:'"Merriweather",Georgia,serif'},
+  {name:'Lora',             css:'"Lora",Georgia,serif'},
+  {name:'EB Garamond',      css:'"EB Garamond",Georgia,serif'},
+  {name:'Cormorant',        css:'"Cormorant Garamond",Georgia,serif'},
+  {name:'Baskerville',      css:'"Libre Baskerville",Georgia,serif'},
+  {name:'Crimson Text',     css:'"Crimson Text",Georgia,serif'},
+  {name:'PT Serif',         css:'"PT Serif",Georgia,serif'},
+];
+
+// ─── TABS ────────────────────────────────────────────────
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+}
+
+// ─── PROMPT GENERATOR ────────────────────────────────────
+function buildPrompt(){
+  const kw    = document.getElementById('keyword').value.trim()||'[your keyword]';
+  const topic = document.getElementById('topic').value.trim();
+  const count = document.getElementById('frameCount').value;
+  const bc    = document.getElementById('breadcrumb').value.trim()||'Something / Here / Home';
+  return `Generate content for a newspaper/article Paper Animator about "${kw}"${topic?` (topic: ${topic})`:''}.\n\nReturn ONLY raw valid JSON — no markdown, no backticks, no explanation:\n\n{\n  "breadcrumb": "${bc}",\n  "frames": [\n    {\n      "headline": "Short headline that naturally includes ${kw}",\n      "body": "2-4 sentences of article body text. The keyword ${kw} must appear at least once naturally in the body."\n    }\n  ]\n}\n\nRules:\n- Generate exactly ${count} frames\n- Each frame must have a unique headline\n- The keyword "${kw}" must appear in at least one sentence of each frame's body\n- Keep text natural, informative, newspaper-style\n- Return ONLY the JSON object, nothing else`;
+}
+
+function refreshPrompt(){
+  const box=document.getElementById('promptBox');
+  if(box) box.textContent=buildPrompt();
+}
+
+function copyPrompt(){
+  navigator.clipboard.writeText(buildPrompt()).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='Copied!';
+    setTimeout(()=>btn.textContent='Copy Prompt',2000);
+  });
+}
+
+// ─── JSON VALIDATION ─────────────────────────────────────
+function validateJson(el){
+  const val=el.value.trim();
+  const status=document.getElementById('jsonStatus');
+  if(!val){el.className='paste-area';status.textContent='';return;}
+  try{
+    const clean=val.replace(/```json|```/g,'').trim();
+    const p=JSON.parse(clean);
+    if(p.frames&&Array.isArray(p.frames)){
+      el.className='paste-area valid';
+      status.innerHTML=`<span style="color:#27ae60;font-size:13px;font-weight:600">✓ Valid JSON — ${p.frames.length} frames detected</span>`;
+    } else {
+      el.className='paste-area invalid';
+      status.innerHTML=`<span style="color:#e74c3c;font-size:13px">⚠ JSON valid but missing "frames" array</span>`;
+    }
+  } catch(e){
+    el.className='paste-area invalid';
+    status.innerHTML=`<span style="color:#e74c3c;font-size:13px">⚠ Invalid JSON — ${e.message}</span>`;
+  }
+}
+
+function loadFromJson(){
+  const raw=document.getElementById('jsonPaste').value.trim();
+  if(!raw){alert('Paste ChatGPT JSON first.');return;}
+  let parsed;
+  try{
+    const clean=raw.replace(/```json|```/g,'').trim();
+    parsed=JSON.parse(clean);
+  } catch(e){
+    alert('Invalid JSON. Make sure you copied the full response from ChatGPT.');
+    return;
+  }
+  if(!parsed.frames||!Array.isArray(parsed.frames)){
+    alert('JSON must have a "frames" array. Ask ChatGPT again using the exact prompt.');
+    return;
+  }
+  if(parsed.breadcrumb) document.getElementById('breadcrumb').value=parsed.breadcrumb;
+
+  // Switch to manual tab to show frames
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('.tab-btn')[1].classList.add('active');
+  document.getElementById('tab-manual').classList.add('active');
+
+  // Clear existing frames
+  document.getElementById('framesContainer').innerHTML='';
+  frameIdCounter=0;
+
+  parsed.frames.forEach(f=>addFrame({headline:f.headline||'',body:f.body||f.sentences?.join(' ')||''}));
+
+  // scroll to frames
+  document.getElementById('tab-manual').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function loadExample(){
+  document.getElementById('jsonPaste').value=JSON.stringify({
+    "breadcrumb":"Sports / IPL / Home",
+    "frames":[
+      {"headline":"Latest Highlights of Rajasthan Royals Season 2024","body":"The Rajasthan Royals showed exceptional form this season. Their strategic gameplay led to a series of impressive wins. Fans are excited about the upcoming playoffs."},
+      {"headline":"Upcoming Fixtures for Rajasthan Royals","body":"The Rajasthan Royals have a packed schedule of fixtures this season. Key players have been retained to maintain peak performance in all matches."},
+      {"headline":"Rise of Rajasthan Royals in Cricket History","body":"Rajasthan Royals has played a pivotal role in shaping modern cricket. Their journey has been marked by remarkable victories and inspiring comeback stories."},
+      {"headline":"Legacy of Rajasthan Royals in the IPL","body":"Rajasthan Royals is one of the most storied teams in IPL history. The team continues to innovate with fresh talent and bold strategies every season."}
+    ]
+  },null,2);
+  validateJson(document.getElementById('jsonPaste'));
+}
+
+// ─── MANUAL FRAME BUILDER ────────────────────────────────
+function addFrame(data){
+  frameIdCounter++;
+  const id=frameIdCounter;
+  const fontIdx=(frameIdCounter-1)%FONTS.length;
+  const font=FONTS[fontIdx];
+  const container=document.getElementById('framesContainer');
+  const div=document.createElement('div');
+  div.className='frame-input';
+  div.id=`frame-${id}`;
+  div.dataset.fontIdx=fontIdx;
+  div.innerHTML=`
+    <div class="frame-input-header">
+      <div class="left">
+        <span class="frame-num">Frame ${id}</span>
+        <span class="font-tag">${font.name}</span>
+      </div>
+      <button class="remove-btn" onclick="document.getElementById('frame-${id}').remove()">✕ Remove</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div class="field">
+        <label>Headline</label>
+        <input type="text" id="hl-${id}" placeholder="Write headline here..." value="${esc(data?.headline||'')}" style="font-family:${font.css}" />
+      </div>
+      <div class="field">
+        <label>Body Text</label>
+        <textarea id="body-${id}" rows="3" placeholder="Write article body. Include your keyword naturally." style="font-family:${font.css}">${esc(data?.body||'')}</textarea>
+      </div>
+    </div>`;
+  container.appendChild(div);
+}
+
+function esc(s){return(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
+
+// ─── CANVAS ──────────────────────────────────────────────
+function wrapText(ctx,text,maxW){
+  const words=text.split(' '),lines=[];
+  let cur='';
+  for(const w of words){
+    const test=cur?cur+' '+w:w;
+    if(ctx.measureText(test).width>maxW&&cur){lines.push(cur);cur=w;}
+    else cur=test;
+  }
+  if(cur)lines.push(cur);
+  return lines;
+}
+
+// ── Texture: Classic Newsprint ──────────────────────────────
+function textureClassic(ctx,cw,ch){
+  ctx.fillStyle='#ede8df';ctx.fillRect(0,0,cw,ch);
+  for(let i=0;i<30000;i++){
+    const x=Math.random()*cw,y=Math.random()*ch,a=Math.random()*0.055,v=Math.random()>.5?215:105;
+    ctx.fillStyle=`rgba(${v},${v-10},${v-25},${a})`;ctx.fillRect(x,y,1,1);
+  }
+  ctx.strokeStyle='rgba(120,110,90,0.15)';ctx.lineWidth=1;
+  for(let i=0;i<8;i++){
+    ctx.beginPath();const x=60+Math.random()*(cw-120);
+    ctx.moveTo(x,0);ctx.bezierCurveTo(x-30+Math.random()*60,ch*.33,x-30+Math.random()*60,ch*.66,x+Math.random()*40-20,ch);ctx.stroke();
+  }
+  for(let i=0;i<5;i++){
+    ctx.beginPath();const y=80+Math.random()*(ch-160);
+    ctx.moveTo(0,y);ctx.bezierCurveTo(cw*.33,y-20+Math.random()*40,cw*.66,y-20+Math.random()*40,cw,y+Math.random()*20-10);ctx.stroke();
+  }
+}
+
+// ── Texture: Aged / Yellowed ─────────────────────────────────
+function textureAged(ctx,cw,ch){
+  // warm yellow-brown base
+  const grad=ctx.createRadialGradient(cw*.5,ch*.5,cw*.1,cw*.5,ch*.5,cw*.85);
+  grad.addColorStop(0,'#f2e8c8');grad.addColorStop(1,'#c8a96e');
+  ctx.fillStyle=grad;ctx.fillRect(0,0,cw,ch);
+  // heavy grain
+  for(let i=0;i<40000;i++){
+    const x=Math.random()*cw,y=Math.random()*ch,a=Math.random()*0.07;
+    const v=Math.random()>.6?180:80;
+    ctx.fillStyle=`rgba(${v},${Math.round(v*.8)},${Math.round(v*.5)},${a})`;ctx.fillRect(x,y,1+Math.random(),1+Math.random());
+  }
+  // dark edge vignette
+  const vig=ctx.createRadialGradient(cw*.5,ch*.5,cw*.3,cw*.5,ch*.5,cw*.9);
+  vig.addColorStop(0,'rgba(0,0,0,0)');vig.addColorStop(1,'rgba(60,30,0,0.38)');
+  ctx.fillStyle=vig;ctx.fillRect(0,0,cw,ch);
+  // crumple
+  ctx.strokeStyle='rgba(100,70,30,0.18)';ctx.lineWidth=1;
+  for(let i=0;i<10;i++){
+    ctx.beginPath();const x=Math.random()*cw;
+    ctx.moveTo(x,0);ctx.bezierCurveTo(x-40+Math.random()*80,ch*.3,x-40+Math.random()*80,ch*.7,x+Math.random()*60-30,ch);ctx.stroke();
+  }
+  // horizontal water stain lines
+  ctx.strokeStyle='rgba(140,100,40,0.08)';ctx.lineWidth=Math.round(cw*0.04);
+  for(let i=0;i<3;i++){
+    ctx.beginPath();const y=ch*(0.2+Math.random()*0.6);
+    ctx.moveTo(0,y);ctx.lineTo(cw,y+Math.random()*40-20);ctx.stroke();
+  }
+}
+
+// ── Texture: Dark Newspaper ──────────────────────────────────
+function textureDark(ctx,cw,ch){
+  ctx.fillStyle='#1a1a18';ctx.fillRect(0,0,cw,ch);
+  // subtle noise
+  for(let i=0;i<35000;i++){
+    const x=Math.random()*cw,y=Math.random()*ch,a=Math.random()*0.06;
+    const v=Math.round(30+Math.random()*40);
+    ctx.fillStyle=`rgba(${v},${v},${v-5},${a})`;ctx.fillRect(x,y,1,1);
+  }
+  // faint scan lines
+  ctx.strokeStyle='rgba(255,255,255,0.025)';ctx.lineWidth=1;
+  for(let y=0;y<ch;y+=Math.round(ch/60)){
+    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cw,y);ctx.stroke();
+  }
+  // crumple — lighter
+  ctx.strokeStyle='rgba(255,255,255,0.06)';ctx.lineWidth=1;
+  for(let i=0;i<6;i++){
+    ctx.beginPath();const x=60+Math.random()*(cw-120);
+    ctx.moveTo(x,0);ctx.bezierCurveTo(x-30+Math.random()*60,ch*.33,x-30+Math.random()*60,ch*.66,x+Math.random()*40-20,ch);ctx.stroke();
+  }
+}
+
+// ── Texture: Graph / Grid Paper ─────────────────────────────
+function textureGrid(ctx,cw,ch){
+  ctx.fillStyle='#f7f9fc';ctx.fillRect(0,0,cw,ch);
+  const cell=Math.round(cw/18);
+  // minor grid
+  ctx.strokeStyle='rgba(100,140,200,0.18)';ctx.lineWidth=0.7;
+  for(let x=0;x<cw;x+=cell){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,ch);ctx.stroke();}
+  for(let y=0;y<ch;y+=cell){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cw,y);ctx.stroke();}
+  // major grid every 5
+  ctx.strokeStyle='rgba(80,120,200,0.3)';ctx.lineWidth=1;
+  for(let x=0;x<cw;x+=cell*5){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,ch);ctx.stroke();}
+  for(let y=0;y<ch;y+=cell*5){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cw,y);ctx.stroke();}
+  // light grain
+  for(let i=0;i<12000;i++){
+    const x=Math.random()*cw,y=Math.random()*ch,a=Math.random()*0.04;
+    ctx.fillStyle=`rgba(150,160,180,${a})`;ctx.fillRect(x,y,1,1);
+  }
+}
+
+// ── Texture: Lined Paper ─────────────────────────────────────
+function textureLinedPaper(ctx,cw,ch){
+  ctx.fillStyle='#fdfcf8';ctx.fillRect(0,0,cw,ch);
+  // red margin line
+  const marginX=Math.round(cw*0.12);
+  ctx.strokeStyle='rgba(220,80,80,0.35)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(marginX,0);ctx.lineTo(marginX,ch);ctx.stroke();
+  // blue lines
+  const lineGap=Math.round(ch/28);
+  ctx.strokeStyle='rgba(100,140,210,0.28)';ctx.lineWidth=1;
+  for(let y=lineGap;y<ch;y+=lineGap){
+    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cw,y);ctx.stroke();
+  }
+  // faint grain
+  for(let i=0;i<10000;i++){
+    const x=Math.random()*cw,y=Math.random()*ch,a=Math.random()*0.03;
+    ctx.fillStyle=`rgba(180,170,150,${a})`;ctx.fillRect(x,y,1,1);
+  }
+  // punch holes
+  const holeR=Math.round(cw*0.018);
+  const holeX=Math.round(cw*0.035);
+  [0.2,0.5,0.8].forEach(p=>{
+    const hy=Math.round(ch*p);
+    ctx.beginPath();ctx.arc(holeX,hy,holeR,0,Math.PI*2);
+    ctx.fillStyle='rgba(200,195,185,0.6)';ctx.fill();
+    ctx.strokeStyle='rgba(160,155,145,0.5)';ctx.lineWidth=1;ctx.stroke();
+  });
+}
+
+// ── Texture: Torn Edge ───────────────────────────────────────
+function textureTorn(ctx,cw,ch){
+  ctx.fillStyle='#f0ece2';ctx.fillRect(0,0,cw,ch);
+  // grain
+  for(let i=0;i<28000;i++){
+    const x=Math.random()*cw,y=Math.random()*ch,a=Math.random()*0.055,v=Math.random()>.5?210:100;
+    ctx.fillStyle=`rgba(${v},${v-8},${v-20},${a})`;ctx.fillRect(x,y,1,1);
+  }
+  // crumple
+  ctx.strokeStyle='rgba(120,110,90,0.14)';ctx.lineWidth=1;
+  for(let i=0;i<8;i++){
+    ctx.beginPath();const x=60+Math.random()*(cw-120);
+    ctx.moveTo(x,0);ctx.bezierCurveTo(x-30+Math.random()*60,ch*.33,x-30+Math.random()*60,ch*.66,x+Math.random()*40-20,ch);ctx.stroke();
+  }
+  // torn top edge
+  ctx.beginPath();ctx.moveTo(0,0);
+  let tx=0;const tornH=Math.round(ch*0.04);
+  while(tx<cw){tx+=4+Math.random()*12;ctx.lineTo(Math.min(tx,cw),Math.random()*tornH);}
+  ctx.lineTo(cw,0);ctx.closePath();
+  ctx.fillStyle='rgba(160,145,120,0.55)';ctx.fill();
+  // torn bottom edge
+  ctx.beginPath();ctx.moveTo(0,ch);
+  tx=0;
+  while(tx<cw){tx+=4+Math.random()*12;ctx.lineTo(Math.min(tx,cw),ch-Math.random()*tornH);}
+  ctx.lineTo(cw,ch);ctx.closePath();
+  ctx.fillStyle='rgba(160,145,120,0.55)';ctx.fill();
+  // shadow below torn top
+  const topShadow=ctx.createLinearGradient(0,tornH,0,tornH+Math.round(ch*0.05));
+  topShadow.addColorStop(0,'rgba(0,0,0,0.12)');topShadow.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=topShadow;ctx.fillRect(0,tornH,cw,Math.round(ch*0.05));
+}
+
+// ── Dispatcher ───────────────────────────────────────────────
+// ── Custom texture image store ───────────────────────────────
+let customTextureImages=[]; // array of HTMLImageElement
+let currentFrameIndex=0;   // incremented per frame during generate
+
+// 6 transform variants for single-image rotation
+const IMG_TRANSFORMS=[
+  {rotate:0,   flipX:false, flipY:false}, // original
+  {rotate:0,   flipX:true,  flipY:false}, // mirror H
+  {rotate:0,   flipX:false, flipY:true},  // mirror V
+  {rotate:180, flipX:false, flipY:false}, // 180°
+  {rotate:90,  flipX:false, flipY:false}, // 90° CW
+  {rotate:270, flipX:false, flipY:false}, // 90° CCW
+];
+
+function applyCustomTexture(ctx,cw,ch,frameIdx){
+  if(customTextureImages.length===0){textureClassic(ctx,cw,ch);return;}
+  // pick image: multiple → cycle; single → use transform variant
+  let img, transform=null;
+  if(customTextureImages.length>1){
+    img=customTextureImages[frameIdx%customTextureImages.length];
+  } else {
+    img=customTextureImages[0];
+    transform=IMG_TRANSFORMS[frameIdx%IMG_TRANSFORMS.length];
+  }
+  ctx.save();
+  // centre-based transform
+  ctx.translate(cw/2,ch/2);
+  if(transform){
+    ctx.rotate((transform.rotate*Math.PI)/180);
+    ctx.scale(transform.flipX?-1:1, transform.flipY?-1:1);
+  }
+  // draw image to fill canvas (cover)
+  const iw=img.naturalWidth||img.width, ih=img.naturalHeight||img.height;
+  const scale=Math.max(cw/iw, ch/ih);
+  const dw=iw*scale, dh=ih*scale;
+  ctx.drawImage(img,-dw/2,-dh/2,dw,dh);
+  ctx.restore();
+  // subtle grain overlay so text stays readable
+  for(let i=0;i<8000;i++){
+    const x=Math.random()*cw,y=Math.random()*ch,a=Math.random()*0.03;
+    ctx.fillStyle=`rgba(255,255,255,${a})`;ctx.fillRect(x,y,1,1);
+  }
+}
+
+function makePaper(ctx,cw,ch,frameIdx=0){
+  const t=document.getElementById('paperTexture')?.value||'classic';
+  if(t==='custom')    applyCustomTexture(ctx,cw,ch,frameIdx);
+  else if(t==='aged') textureAged(ctx,cw,ch);
+  else if(t==='dark') textureDark(ctx,cw,ch);
+  else if(t==='grid') textureGrid(ctx,cw,ch);
+  else if(t==='lined')textureLinedPaper(ctx,cw,ch);
+  else if(t==='torn') textureTorn(ctx,cw,ch);
+  else                textureClassic(ctx,cw,ch);
+}
+
+// ── Texture preview ──────────────────────────────────────────
+function updateTexturePreview(frameIdx=0){
+  const cv=document.getElementById('texturePreview');
+  if(!cv)return;
+  const ctx=cv.getContext('2d');
+  makePaper(ctx,300,80,frameIdx);
+}
+
+function onTextureChange(){
+  const val=document.getElementById('paperTexture').value;
+  document.getElementById('customTextureRow').style.display=val==='custom'?'':'none';
+  updateTexturePreview(0);
+}
+
+// ── File upload handlers ──────────────────────────────────────
+function handleTextureDrop(e){
+  e.preventDefault();
+  document.getElementById('uploadDropzone').style.borderColor='#ccc';
+  handleTextureUpload(e.dataTransfer.files);
+}
+
+function handleTextureUpload(files){
+  if(!files||files.length===0)return;
+  const newImgs=[];
+  let loaded=0;
+  Array.from(files).forEach(file=>{
+    if(!file.type.startsWith('image/'))return;
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        newImgs.push({img,name:file.name});
+        loaded++;
+        if(loaded===Array.from(files).filter(f=>f.type.startsWith('image/')).length){
+          newImgs.forEach(o=>customTextureImages.push(o.img));
+          renderUploadedList();
+          updateTexturePreview(0);
+        }
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderUploadedList(){
+  const list=document.getElementById('uploadedTextureList');
+  if(customTextureImages.length===0){
+    list.innerHTML='<span style="font-size:12px;color:#bbb;margin-top:8px">No images uploaded yet</span>';
+    return;
+  }
+  list.innerHTML='';
+  customTextureImages.forEach((img,i)=>{
+    const wrap=document.createElement('div');
+    wrap.style.cssText='position:relative;display:inline-block';
+    const thumb=document.createElement('canvas');
+    thumb.width=60;thumb.height=60;
+    thumb.style.cssText='border-radius:6px;border:1px solid #ddd;cursor:pointer;display:block';
+    thumb.title=`Texture ${i+1} — click to preview`;
+    const tc=thumb.getContext('2d');
+    // draw scaled
+    const sc=Math.max(60/img.naturalWidth,60/img.naturalHeight);
+    tc.drawImage(img,(60-img.naturalWidth*sc)/2,(60-img.naturalHeight*sc)/2,img.naturalWidth*sc,img.naturalHeight*sc);
+    thumb.onclick=()=>updateTexturePreview(i);
+    const del=document.createElement('button');
+    del.textContent='×';
+    del.style.cssText='position:absolute;top:-4px;right:-4px;width:18px;height:18px;border-radius:50%;border:none;background:#e74c3c;color:#fff;font-size:12px;cursor:pointer;line-height:1;padding:0;display:flex;align-items:center;justify-content:center';
+    del.onclick=()=>{customTextureImages.splice(i,1);renderUploadedList();updateTexturePreview(0);};
+    wrap.appendChild(thumb);wrap.appendChild(del);
+    list.appendChild(wrap);
+  });
+  // Info badge
+  const info=document.createElement('div');
+  info.style.cssText='font-size:11px;color:#aaa;width:100%;margin-top:4px';
+  info.textContent=customTextureImages.length===1
+    ?'1 image — 6 auto-rotated variants will be used'
+    :`${customTextureImages.length} images — cycled per frame`;
+  list.appendChild(info);
+}
+
+// ── Shared: draw body lines with highlight ──────────────────
+function drawBodyLines(ctx,allLines,keyword,cw,ch,PAD,FS,LINE_H,BODY,BOLD){
+  const kwLower=keyword.toLowerCase();
+  let kwFound=false,y=arguments[9+1]||0; // y passed as extra arg below
+  // y is passed separately — see callers
+  return kwFound; // placeholder, logic inlined in layouts
+}
+
+// ── Shared: render highlighted body text block ───────────────
+function renderBody(ctx,allLines,keyword,PAD,FS,LINE_H,BODY,BOLD,startY,maxY){
+  const kwLower=keyword.toLowerCase();
+  let kwFound=false,y=startY;
+  for(let i=0;i<allLines.length;i++){
+    if(y>maxY)break;
+    const line=allLines[i];
+    if(line===null){y+=Math.round(LINE_H*0.5);continue;}
+    const kwIdx=!kwFound?line.toLowerCase().indexOf(kwLower):-1;
+    if(kwIdx!==-1){
+      kwFound=true;
+      const before=line.substring(0,kwIdx);
+      const kw=line.substring(kwIdx,kwIdx+keyword.length);
+      const after=line.substring(kwIdx+keyword.length);
+      ctx.font=BODY;const bw=ctx.measureText(before).width;
+      ctx.font=BOLD;const kwW=ctx.measureText(kw).width;
+      const hPad=10;
+      ctx.fillStyle='#f5e642';
+      ctx.fillRect(PAD+bw-hPad,y-FS+2,kwW+hPad*2,FS+10);
+      ctx.font=BODY;ctx.fillStyle='rgba(26,22,16,0.85)';ctx.fillText(before,PAD,y);
+      ctx.font=BOLD;ctx.fillStyle='#1a1610';ctx.fillText(kw,PAD+bw,y);
+      ctx.font=BODY;ctx.fillStyle='rgba(26,22,16,0.28)';ctx.fillText(after,PAD+bw+kwW,y);
+    } else {
+      const alpha=kwFound?Math.max(0.14,0.62-Math.min(i,6)*0.07):0.72;
+      ctx.font=BODY;ctx.fillStyle=`rgba(26,22,16,${alpha})`;ctx.fillText(line,PAD,y);
+    }
+    y+=LINE_H;
+  }
+  return y;
+}
+
+function drawFrame(keyword,breadcrumb,headline,bodyText,fontObj,frameIdx=0){
+  const {w:cw,h:ch}=getDims();
+  const ratio=document.getElementById('aspectRatio').value;
+  const canvas=document.createElement('canvas');
+  canvas.width=cw;canvas.height=ch;
+  const ctx=canvas.getContext('2d');
+  makePaper(ctx,cw,ch,frameIdx);
+  const f=fontObj.css;
+
+  // ── 9:16  Portrait — original stacked layout ──────────────
+  if(ratio==='9:16'){
+    const scale=cw/720;
+    const FS=Math.round(38*scale),LINE_H=FS+Math.round(16*scale);
+    const HL_FS=Math.round(52*scale),BC_FS=Math.round(26*scale);
+    const PAD=Math.round(56*scale),MAXW=cw-PAD*2;
+    const BODY=`${FS}px ${f}`,BOLD=`bold ${FS}px ${f}`;
+    let y=Math.round(100*scale);
+    ctx.font=`${BC_FS}px ${f}`;ctx.fillStyle='rgba(90,80,65,0.55)';ctx.fillText(breadcrumb,PAD,y);y+=Math.round(48*scale);
+    ctx.strokeStyle='rgba(90,80,65,0.25)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(PAD,y);ctx.lineTo(cw-PAD,y);ctx.stroke();y+=Math.round(52*scale);
+    ctx.font=`bold ${HL_FS}px ${f}`;ctx.fillStyle='#1a1610';
+    const hlLines=wrapText(ctx,headline,MAXW);
+    for(const ln of hlLines){ctx.fillText(ln,PAD,y);y+=Math.round(64*scale);}
+    y+=Math.round(28*scale);
+    const sentences=bodyText.trim().split(/(?<=[.!?])\s+/).filter(s=>s.trim().length>0);
+    const allLines=[];ctx.font=BODY;
+    for(const s of sentences){wrapText(ctx,s.trim(),MAXW).forEach(l=>allLines.push(l));allLines.push(null);}
+    renderBody(ctx,allLines,keyword,PAD,FS,LINE_H,BODY,BOLD,y,ch-70);
+    ctx.font=`italic ${Math.round(20*scale)}px ${f}`;ctx.fillStyle='rgba(90,80,65,0.28)';
+    const fw=ctx.measureText(fontObj.name).width;
+    ctx.fillText(fontObj.name,cw-PAD-fw,ch-Math.round(40*scale));
+  }
+
+  // ── 16:9  Landscape — left headline column + right body column ──
+  else if(ratio==='16:9'){
+    const scale=ch/720;
+    const FS=Math.round(30*scale),LINE_H=FS+Math.round(14*scale);
+    const HL_FS=Math.round(58*scale),BC_FS=Math.round(22*scale);
+    const PAD=Math.round(60*scale);
+    const BODY=`${FS}px ${f}`,BOLD=`bold ${FS}px ${f}`;
+    // Two columns: left 44% headline zone, right 56% body zone
+    const leftW=Math.round(cw*0.44);
+    const colGap=Math.round(cw*0.04);
+    const rightX=leftW+colGap;
+    const rightW=cw-rightX-PAD;
+
+    // Left column — breadcrumb + headline fills height
+    let y=PAD;
+    ctx.font=`${BC_FS}px ${f}`;ctx.fillStyle='rgba(90,80,65,0.5)';
+    ctx.fillText(breadcrumb,PAD,y+BC_FS);y+=BC_FS+Math.round(20*scale);
+    // vertical divider
+    ctx.strokeStyle='rgba(90,80,65,0.22)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(leftW,PAD);ctx.lineTo(leftW,ch-PAD);ctx.stroke();
+    // horizontal rule under breadcrumb
+    ctx.beginPath();ctx.moveTo(PAD,y);ctx.lineTo(leftW-PAD,y);ctx.stroke();
+    y+=Math.round(28*scale);
+    // Big headline
+    ctx.font=`bold ${HL_FS}px ${f}`;ctx.fillStyle='#1a1610';
+    const maxHlW=leftW-PAD*2;
+    const hlLines=wrapText(ctx,headline,maxHlW);
+    for(const ln of hlLines){ctx.fillText(ln,PAD,y);y+=Math.round(HL_FS*1.2);}
+    // font tag bottom left
+    ctx.font=`italic ${Math.round(18*scale)}px ${f}`;ctx.fillStyle='rgba(90,80,65,0.28)';
+    ctx.fillText(fontObj.name,PAD,ch-Math.round(30*scale));
+
+    // Right column — body text with highlight
+    const sentences=bodyText.trim().split(/(?<=[.!?])\s+/).filter(s=>s.trim().length>0);
+    const allLines=[];ctx.font=BODY;
+    for(const s of sentences){wrapText(ctx,s.trim(),rightW).forEach(l=>allLines.push(l));allLines.push(null);}
+    // right-col renderBody (custom x offset)
+    const kwLower=keyword.toLowerCase();
+    let kwFound=false,ry=PAD+FS;
+    for(let i=0;i<allLines.length;i++){
+      if(ry>ch-PAD)break;
+      const line=allLines[i];
+      if(line===null){ry+=Math.round(LINE_H*0.5);continue;}
+      const kwIdx=!kwFound?line.toLowerCase().indexOf(kwLower):-1;
+      if(kwIdx!==-1){
+        kwFound=true;
+        const before=line.substring(0,kwIdx);
+        const kw=line.substring(kwIdx,kwIdx+keyword.length);
+        const after=line.substring(kwIdx+keyword.length);
+        ctx.font=BODY;const bw=ctx.measureText(before).width;
+        ctx.font=BOLD;const kwW=ctx.measureText(kw).width;
+        ctx.fillStyle='#f5e642';
+        ctx.fillRect(rightX+bw-8,ry-FS+2,kwW+16,FS+10);
+        ctx.font=BODY;ctx.fillStyle='rgba(26,22,16,0.85)';ctx.fillText(before,rightX,ry);
+        ctx.font=BOLD;ctx.fillStyle='#1a1610';ctx.fillText(kw,rightX+bw,ry);
+        ctx.font=BODY;ctx.fillStyle='rgba(26,22,16,0.28)';ctx.fillText(after,rightX+bw+kwW,ry);
+      } else {
+        const alpha=kwFound?Math.max(0.14,0.62-Math.min(i,6)*0.07):0.72;
+        ctx.font=BODY;ctx.fillStyle=`rgba(26,22,16,${alpha})`;ctx.fillText(line,rightX,ry);
+      }
+      ry+=LINE_H;
+    }
+  }
+
+  // ── 4:5  Instagram Feed — top bar + large headline + body ──
+  else if(ratio==='4:5'){
+    const scale=cw/720;
+    const FS=Math.round(34*scale),LINE_H=FS+Math.round(14*scale);
+    const HL_FS=Math.round(58*scale),BC_FS=Math.round(24*scale);
+    const PAD=Math.round(56*scale),MAXW=cw-PAD*2;
+    const BODY=`${FS}px ${f}`,BOLD=`bold ${FS}px ${f}`;
+    // top accent bar
+    ctx.fillStyle='rgba(26,22,16,0.08)';
+    ctx.fillRect(0,0,cw,Math.round(8*scale));
+    let y=Math.round(70*scale);
+    ctx.font=`${BC_FS}px ${f}`;ctx.fillStyle='rgba(90,80,65,0.55)';ctx.fillText(breadcrumb,PAD,y);y+=Math.round(36*scale);
+    ctx.strokeStyle='rgba(90,80,65,0.25)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(PAD,y);ctx.lineTo(cw-PAD,y);ctx.stroke();y+=Math.round(44*scale);
+    ctx.font=`bold ${HL_FS}px ${f}`;ctx.fillStyle='#1a1610';
+    const hlLines=wrapText(ctx,headline,MAXW);
+    for(const ln of hlLines){ctx.fillText(ln,PAD,y);y+=Math.round(HL_FS*1.18);}
+    y+=Math.round(22*scale);
+    const sentences=bodyText.trim().split(/(?<=[.!?])\s+/).filter(s=>s.trim().length>0);
+    const allLines=[];ctx.font=BODY;
+    for(const s of sentences){wrapText(ctx,s.trim(),MAXW).forEach(l=>allLines.push(l));allLines.push(null);}
+    renderBody(ctx,allLines,keyword,PAD,FS,LINE_H,BODY,BOLD,y,ch-60);
+    ctx.font=`italic ${Math.round(18*scale)}px ${f}`;ctx.fillStyle='rgba(90,80,65,0.28)';
+    const fw=ctx.measureText(fontObj.name).width;
+    ctx.fillText(fontObj.name,cw-PAD-fw,ch-Math.round(32*scale));
+  }
+
+  // ── 1:1  Square — centered layout with big highlight focus ──
+  else if(ratio==='1:1'){
+    const scale=cw/720;
+    const FS=Math.round(32*scale),LINE_H=FS+Math.round(14*scale);
+    const HL_FS=Math.round(52*scale),BC_FS=Math.round(22*scale);
+    const PAD=Math.round(60*scale),MAXW=cw-PAD*2;
+    const BODY=`${FS}px ${f}`,BOLD=`bold ${FS}px ${f}`;
+    let y=Math.round(72*scale);
+    ctx.font=`${BC_FS}px ${f}`;ctx.fillStyle='rgba(90,80,65,0.5)';ctx.fillText(breadcrumb,PAD,y);y+=Math.round(34*scale);
+    ctx.strokeStyle='rgba(90,80,65,0.22)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(PAD,y);ctx.lineTo(cw-PAD,y);ctx.stroke();y+=Math.round(38*scale);
+    ctx.font=`bold ${HL_FS}px ${f}`;ctx.fillStyle='#1a1610';
+    const hlLines=wrapText(ctx,headline,MAXW);
+    for(const ln of hlLines){ctx.fillText(ln,PAD,y);y+=Math.round(HL_FS*1.15);}
+    y+=Math.round(18*scale);
+    // horizontal rule after headline
+    ctx.strokeStyle='rgba(90,80,65,0.15)';
+    ctx.beginPath();ctx.moveTo(PAD,y);ctx.lineTo(cw-PAD,y);ctx.stroke();y+=Math.round(22*scale);
+    const sentences=bodyText.trim().split(/(?<=[.!?])\s+/).filter(s=>s.trim().length>0);
+    const allLines=[];ctx.font=BODY;
+    for(const s of sentences){wrapText(ctx,s.trim(),MAXW).forEach(l=>allLines.push(l));allLines.push(null);}
+    renderBody(ctx,allLines,keyword,PAD,FS,LINE_H,BODY,BOLD,y,ch-60);
+    ctx.font=`italic ${Math.round(17*scale)}px ${f}`;ctx.fillStyle='rgba(90,80,65,0.28)';
+    const fw=ctx.measureText(fontObj.name).width;
+    ctx.fillText(fontObj.name,cw-PAD-fw,ch-Math.round(28*scale));
+  }
+
+  return canvas.toDataURL('image/png');
+}
+
+async function preloadFonts(){
+  const c=document.createElement('canvas'),ctx=c.getContext('2d');
+  FONTS.forEach(f=>{ctx.font=`16px ${f.css}`;ctx.fillText('a',0,0);});
+  await new Promise(r=>setTimeout(r,500));
+}
+
+// ─── GENERATE ────────────────────────────────────────────
+async function generate(){
+  await preloadFonts();
+  const keyword    =document.getElementById('keyword').value.trim();
+  const breadcrumb =document.getElementById('breadcrumb').value.trim()||'Something / Here / Home';
+  const err        =document.getElementById('err');
+  const grid       =document.getElementById('grid');
+  const outputCard =document.getElementById('outputCard');
+
+  if(!keyword){err.textContent='Enter a keyword to highlight.';return;}
+  err.textContent='';grid.innerHTML='';generatedUrls=[];
+
+  const frameEls=document.querySelectorAll('.frame-input');
+  if(frameEls.length===0){err.textContent='Add at least one frame (load JSON or write manually).';return;}
+
+  outputCard.style.display='block';
+
+  frameEls.forEach((el,i)=>{
+    const id=el.id.replace('frame-','');
+    const fontIdx=parseInt(el.dataset.fontIdx)||0;
+    const fontObj=FONTS[fontIdx%FONTS.length];
+    const headline=document.getElementById(`hl-${id}`)?.value.trim()||'';
+    const body    =document.getElementById(`body-${id}`)?.value.trim()||'';
+    if(!headline&&!body)return;
+
+    const dataUrl=drawFrame(keyword,breadcrumb,headline||keyword,body||headline,fontObj,i);
+    generatedUrls.push({url:dataUrl,idx:i+1,keyword});
+
+    const div=document.createElement('div');div.className='frame-wrap';
+    const img=document.createElement('img');
+    img.src=dataUrl;img.title=`Click to preview — ${fontObj.name}`;
+    img.onclick=()=>{document.getElementById('previewImg').src=dataUrl;document.getElementById('preview').classList.add('active');};
+    div.appendChild(img);
+
+    const lbl=document.createElement('div');lbl.className='frame-label';
+    const ratio=document.getElementById('aspectRatio').value;lbl.textContent=`Frame ${i+1} · ${fontObj.name} · ${ratio}`;div.appendChild(lbl);
+
+    const dlBtn=document.createElement('button');dlBtn.className='secondary dl-btn';
+    dlBtn.textContent='↓ Download';
+    dlBtn.onclick=()=>{const a=document.createElement('a');a.download=`${keyword.replace(/\s+/g,'_')}_frame_${i+1}.png`;a.href=dataUrl;a.click();};
+    div.appendChild(dlBtn);
+    grid.appendChild(div);
+  });
+
+  outputCard.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function downloadAll(){
+  generatedUrls.forEach(({url,idx,keyword})=>{
+    const a=document.createElement('a');
+    a.download=`${(keyword||'frame').replace(/\s+/g,'_')}_frame_${idx}.png`;
+    a.href=url;a.click();
+  });
+}
+
+function closePreview(){document.getElementById('preview').classList.remove('active');}
+
+// ─── INIT ────────────────────────────────────────────────
+refreshPrompt();
+updateTexturePreview();
+</script>
+</body>
+</html>
