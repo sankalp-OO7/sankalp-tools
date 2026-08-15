@@ -455,19 +455,25 @@ function HistoryCard({
               </button>
             </div>
             
-            <div style={{
-              background: 'rgba(0,0,0,0.2)',
-              border: '1px solid rgba(255,255,255,0.05)',
-              borderRadius: 6,
-              padding: 10,
-              maxHeight: 180,
-              overflowY: 'auto',
-              fontSize: 11,
-              lineHeight: 1.5,
-              color: '#A3B8CC',
-              whiteSpace: 'pre-wrap',
-              fontFamily: 'sans-serif'
-            }}>
+            <div 
+              onClick={handleCopy}
+              title="Click to copy caption"
+              style={{
+                background: copied ? 'rgba(78,203,130,0.05)' : 'rgba(0,0,0,0.2)',
+                border: `1px solid ${copied ? 'rgba(78,203,130,0.3)' : 'rgba(255,255,255,0.05)'}`,
+                borderRadius: 6,
+                padding: 10,
+                maxHeight: 180,
+                overflowY: 'auto',
+                fontSize: 11,
+                lineHeight: 1.5,
+                color: copied ? '#4ecb82' : '#A3B8CC',
+                whiteSpace: 'pre-wrap',
+                fontFamily: 'sans-serif',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
               {h.instagramCaption}
             </div>
           </div>

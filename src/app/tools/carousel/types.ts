@@ -38,7 +38,7 @@ export const defAdj:ImgAdj = {panX:0,panY:0,scale:1};
 export type ExtraShape = 'circle'|'rounded'|'square';
 export type ExtraPos   = 'tr'|'br'|'bl'|'tl'|'cr';
 export interface ExtraImg { src:string;shape:ExtraShape;pos:ExtraPos;size:number;adj:ImgAdj; }
-export interface HistoryItem { id:string;title:string;savedAt:string;jsonText:string;theme:string;ratio:RatioKey;align:{tag:number;bullet:number;footer:number;statNum:number;heading:number;subHead:number;secLabel:number;listNum:number;listText:number;quote:number;ctaBtn:number;coverFade?:number};imgAdjs:Record<number,ImgAdj>; instagramCaption?:string; }
+export interface HistoryItem { id:string;title:string;savedAt:string;jsonText:string;theme:string;ratio:RatioKey;align:{tag:number;bullet:number;footer:number;statNum:number;heading:number;subHead:number;secLabel:number;listNum:number;listText:number;quote:number;ctaBtn:number;coverFade?:number};imgAdjs:Record<number,ImgAdj>; instagramCaption?:string; screenshots?:Record<number,string>; extraImgs?:Record<number,ExtraImg[]>; }
 export const defAlign = {tag:-9,bullet:9,footer:-9,statNum:-120,heading:-30,subHead:-9,secLabel:-9,listNum:-9,listText:-9,quote:-9,ctaBtn:-9,coverFade:240};
 export function extraPos(p:ExtraPos,sz:number):React.CSSProperties{const m=50,hH=72,fH=58,b:React.CSSProperties={position:'absolute',width:sz,height:sz,zIndex:5};switch(p){case'tr':return{...b,top:hH+m,right:m};case'br':return{...b,bottom:fH+m,right:m};case'bl':return{...b,bottom:fH+m,left:m};case'tl':return{...b,top:hH+m,left:m};case'cr':return{...b,top:'50%',right:m,transform:'translateY(-50%)'};}}
 

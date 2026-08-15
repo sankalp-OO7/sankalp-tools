@@ -388,6 +388,26 @@ CRITICAL COMPOSITION RULES:
 Professional financial editorial photography, clean composition, minimalist background, cinematic lighting, 8k resolution, photorealistic ${mjAr}`;
   };
 
+  const loadHistoryItem = (h: HistoryItem) => {
+    setJsonText(h.jsonText);
+    setTheme(h.theme);
+    setRatio(h.ratio);
+    setAlign({ ...defAlign, ...h.align });
+    setImgAdjs(h.imgAdjs || {});
+    setScreenshots(h.screenshots || {});
+    setExtraImgs(h.extraImgs || {});
+    setInstagramCaption(h.instagramCaption || '');
+
+    try {
+      const { jsonPart } = extractJsonAndCaption(h.jsonText);
+      const d = JSON.parse(jsonPart) as CarouselData;
+      setData(d);
+      msg('✓ History loaded and rendered successfully', 'ok');
+    } catch (err) {
+      msg('Warning: Loaded JSON is invalid/unparseable', 'error');
+    }
+  };
+
   const pasteAndRender=async()=>{
     try{
       const text=await navigator.clipboard.readText();
@@ -424,7 +444,9 @@ Professional financial editorial photography, clean composition, minimalist back
     const item: HistoryItem = {
       id: `h_${Date.now()}`, title: data.title || 'Untitled Carousel', savedAt: new Date().toISOString(),
       jsonText, theme, ratio, align, imgAdjs,
-      instagramCaption: captionPart
+      instagramCaption: captionPart,
+      screenshots,
+      extraImgs
     };
     setHistory(prev => [item, ...prev].slice(0, 60)); // Keep last 60
     msg('✓ Saved to History','ok');
@@ -470,7 +492,7 @@ Professional financial editorial photography, clean composition, minimalist back
       {tab==='prompt'&&<PromptBuilder/>}
       {tab==='builder'&&<BuilderTab onLoad={j=>{setJsonText(j);setTab('creator');msg('JSON loaded — click Render','ok');}}/>}
       {tab==='themes'&&<ThemeEditor customThemes={customThemes} setCustomThemes={setCustomThemes}/>}
-      {tab==='history'&&<HistoryPanel history={history} loadHistory={h=>{setJsonText(h.jsonText);setTheme(h.theme);setRatio(h.ratio);setAlign({...defAlign, ...h.align});setImgAdjs(h.imgAdjs);setInstagramCaption(h.instagramCaption||'');setTab('creator');msg('History loaded — click Render','ok');}} delHistory={id=>setHistory(prev=>prev.filter(x=>x.id!==id))} updateHistoryItem={updateHistoryItem}/>}
+      {tab==='history'&&<HistoryPanel history={history} loadHistory={h=>{loadHistoryItem(h);setTab('creator');}} delHistory={id=>setHistory(prev=>prev.filter(x=>x.id!==id))} updateHistoryItem={updateHistoryItem}/>}
       
       {tab==='creator'&&(
         <div style={{display:'flex',gap:24,height:'calc(100vh - 200px)'}}>
@@ -484,9 +506,7 @@ Professional financial editorial photography, clean composition, minimalist back
                   <select onChange={e=>{
                     const h=history.find(x=>x.id===e.target.value);
                     if(h){
-                      setJsonText(h.jsonText);setTheme(h.theme);setRatio(h.ratio);setAlign({...defAlign, ...h.align});setImgAdjs(h.imgAdjs);
-                      setInstagramCaption(h.instagramCaption||'');
-                      msg('History loaded — click Render','ok');
+                      loadHistoryItem(h);
                     }
                     e.target.value='';
                   }} style={{background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.1)',color:'#A3B8CC',fontSize:9,fontFamily:"'Space Mono',monospace",borderRadius:4,outline:'none',maxWidth:110}}>
@@ -521,7 +541,10 @@ Professional financial editorial photography, clean composition, minimalist back
                 <div style={{display:'flex',gap:8}}>
                   <button onClick={dlAllSlides} disabled={dlAll} style={{flex:1,padding:11,background:dlAll?'rgba(26,111,168,0.5)':'linear-gradient(135deg,#1a6fa8,#2a8fd4)',color:'#fff',fontFamily:"'Space Mono',monospace",fontSize:10,fontWeight:700,letterSpacing:1.5,border:'none',borderRadius:8,cursor:dlAll?'not-allowed':'pointer'}}>{dlAll?status.msg:'⬇ ALL PNG'}</button>
                   {instagramCaption && (
-                    <button onClick={dlCaptionFile} style={{flex:1,padding:11,background:'rgba(201,168,76,0.12)',border:'1px solid rgba(201,168,76,0.3)',color:'#E8C96A',fontFamily:"'Space Mono',monospace",fontSize:10,borderRadius:8,cursor:'pointer'}}>📝 CAPTION</button>
+                    <button onClick={() => {
+                      navigator.clipboard.writeText(instagramCaption);
+                      msg('✓ Caption copied to clipboard!', 'ok');
+                    }} style={{flex:1,padding:11,background:'rgba(201,168,76,0.12)',border:'1px solid rgba(201,168,76,0.3)',color:'#E8C96A',fontFamily:"'Space Mono',monospace",fontSize:10,borderRadius:8,cursor:'pointer'}}>📝 COPY CAPTION</button>
                   )}
                   <button onClick={saveToHistory} style={{flex:1,padding:11,background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',color:'#A3B8CC',fontFamily:"'Space Mono',monospace",fontSize:10,borderRadius:8,cursor:'pointer'}}>💾 Save</button>
                 </div>
