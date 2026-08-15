@@ -148,7 +148,60 @@ export default function PromptBuilder() {
 
   const carouselPrompt = buildCarouselPrompt(topic, type, cat, n, ss);
   const captionPrompt = buildCaptionPrompt(topic, type, cat, n);
-  const combinedPrompt = `=========================================\nTASK 1: CAROUSEL JSON\n=========================================\n\n${carouselPrompt}\n\n\n\n=========================================\nTASK 2: INSTAGRAM CAPTION\n=========================================\n\n${captionPrompt}`;
+  const combinedPrompt = `You are a social media writer for ShamsGS (shamsgs.com), a UAE-based AI-powered forex trading platform.
+Your task is to generate BOTH a Carousel JSON and a matching Instagram Caption.
+
+TOPIC: ${topic || '[enter topic]'}
+CARROUSEL TYPE: ${type}
+CATEGORY TAG: ${cat || 'SHAMSGS'}
+NUMBER OF SLIDES: ${n}
+SCREENSHOTS: ${ss || 'none'}
+
+--------------------------------------------------
+TASK 1: CAROUSEL JSON
+--------------------------------------------------
+Generate a JSON following the exact schema and character limits:
+${carouselPrompt}
+
+--------------------------------------------------
+TASK 2: INSTAGRAM CAPTION
+--------------------------------------------------
+Generate a caption following these requirements:
+${captionPrompt}
+
+--------------------------------------------------
+CRITICAL FORMATTING REQUIREMENT (SINGLE COPY BUTTON)
+--------------------------------------------------
+To let the user copy all generated content in one single click, you MUST output BOTH the Carousel JSON and the Instagram Caption together inside a SINGLE markdown code block (using triple backticks).
+Do NOT write the caption outside of the code block.
+
+Format your entire final output exactly like this:
+\`\`\`
+{
+  "type": "${type}",
+  "title": "...",
+  "category": "${cat || 'SHAMSGS'}",
+  "slides": [
+    ...
+  ]
+}
+
+Instagram Caption
+
+[Hook text]
+
+[Body text]
+
+[Value Statement]
+
+[CTA]
+
+.
+.
+.
+[Hashtags]
+\`\`\`
+`;
 
   // Paste topic → replace topic, build fresh prompt, copy it, show toast
   const pasteTopicAndCopy = async () => {
@@ -160,7 +213,60 @@ export default function PromptBuilder() {
       // Build prompt fresh with newTopic — no stale state issue
       const freshCarousel = buildCarouselPrompt(newTopic, type, cat, n, ss);
       const freshCaption = buildCaptionPrompt(newTopic, type, cat, n);
-      const freshCombined = `=========================================\nTASK 1: CAROUSEL JSON\n=========================================\n\n${freshCarousel}\n\n\n\n=========================================\nTASK 2: INSTAGRAM CAPTION\n=========================================\n\n${freshCaption}`;
+      const freshCombined = `You are a social media writer for ShamsGS (shamsgs.com), a UAE-based AI-powered forex trading platform.
+Your task is to generate BOTH a Carousel JSON and a matching Instagram Caption.
+
+TOPIC: ${newTopic}
+CARROUSEL TYPE: ${type}
+CATEGORY TAG: ${cat || 'SHAMSGS'}
+NUMBER OF SLIDES: ${n}
+SCREENSHOTS: ${ss || 'none'}
+
+--------------------------------------------------
+TASK 1: CAROUSEL JSON
+--------------------------------------------------
+Generate a JSON following the exact schema and character limits:
+${freshCarousel}
+
+--------------------------------------------------
+TASK 2: INSTAGRAM CAPTION
+--------------------------------------------------
+Generate a caption following these requirements:
+${freshCaption}
+
+--------------------------------------------------
+CRITICAL FORMATTING REQUIREMENT (SINGLE COPY BUTTON)
+--------------------------------------------------
+To let the user copy all generated content in one single click, you MUST output BOTH the Carousel JSON and the Instagram Caption together inside a SINGLE markdown code block (using triple backticks).
+Do NOT write the caption outside of the code block.
+
+Format your entire final output exactly like this:
+\`\`\`
+{
+  "type": "${type}",
+  "title": "...",
+  "category": "${cat || 'SHAMSGS'}",
+  "slides": [
+    ...
+  ]
+}
+
+Instagram Caption
+
+[Hook text]
+
+[Body text]
+
+[Value Statement]
+
+[CTA]
+
+.
+.
+.
+[Hashtags]
+\`\`\`
+`;
       await navigator.clipboard.writeText(freshCombined);
       toast('✓ Topic pasted & prompt copied!', 'ok');
     } catch {
