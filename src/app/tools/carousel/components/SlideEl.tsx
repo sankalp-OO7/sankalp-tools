@@ -48,11 +48,15 @@ export default function SlideEl({ slide, idx, total, theme:t, screenshots, extra
 
   const bodyBase:React.CSSProperties = {position:'absolute',top:72,bottom:58,left:0,right:0,padding:'52px 64px',overflow:'hidden'};
 
+  let coverImageHeight = 380;
+  if (slideH === 1350) coverImageHeight = 600;
+  else if (slideH === 1920) coverImageHeight = 900;
+
   if (type==='cover') return (
     <Wrap>
-      {/* image zone 380px */}
-      <div style={{position:'absolute',top:72,left:0,right:0,height:380,overflow:'hidden',background:t.coverGrad}}>
-        <ImgZone src={ss} adj={adj} w={1080} h={380}/>
+      {/* image zone */}
+      <div style={{position:'absolute',top:72,left:0,right:0,height:coverImageHeight,overflow:'hidden',background:t.coverGrad}}>
+        <ImgZone src={ss} adj={adj} w={1080} h={coverImageHeight}/>
         <div style={{position:'absolute',bottom:0,left:0,right:0,height:align.coverFade??240,background:`linear-gradient(transparent,${t.bg})`}}/>
       </div>
       {/* text zone */}
@@ -72,7 +76,7 @@ export default function SlideEl({ slide, idx, total, theme:t, screenshots, extra
     return (
       <Wrap>
         <div style={{...bodyBase,display:'flex',gap:hasSS?52:0}}>
-          <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
+          <div style={{flex:1,display:'flex',flexDirection:'column',justifyContent:'center',overflow:'hidden'}}>
             {slide.section_label && <div style={{fontFamily:fMono,fontSize:20,letterSpacing:4,textTransform:'uppercase',color:t.accent,display:'flex',alignItems:'center',gap:16,marginBottom:24,transform:`translateY(${align.secLabel}px)`}}>{clamp(slide.section_label,28)}<span style={{flex:1,height:1,background:t.accent,opacity:.3}}/></div>}
             <div style={{fontFamily:fHead,fontSize:68,fontWeight:700,lineHeight:1.1,letterSpacing:-.5,marginBottom:24,transform:`translateY(${align.heading}px)`}}>{clamp(slide.headline,50)}</div>
             {slide.body && <div style={{fontFamily:fBody,fontSize:28,lineHeight:1.65,color:t.textSec,marginBottom:28,transform:`translateY(${align.subHead}px)`}}>{clamp(slide.body,140)}</div>}
@@ -111,7 +115,7 @@ export default function SlideEl({ slide, idx, total, theme:t, screenshots, extra
 
   if (type==='list') return (
     <Wrap>
-      <div style={bodyBase}>
+      <div style={{...bodyBase, display:'flex', flexDirection:'column', justifyContent:'center'}}>
         {slide.section_label && <div style={{fontFamily:fMono,fontSize:20,letterSpacing:4,textTransform:'uppercase',color:t.accent,display:'flex',alignItems:'center',gap:16,marginBottom:24}}>{clamp(slide.section_label,28)}<span style={{flex:1,height:1,background:t.accent,opacity:.3}}/></div>}
         {slide.headline && <div style={{fontFamily:fHead,fontSize:64,fontWeight:700,lineHeight:1.1,marginBottom:32,transform:`translateY(${align.heading}px)`}}>{clamp(slide.headline,50)}</div>}
         <div style={{display:'flex',flexDirection:'column',gap:18}}>
