@@ -104,6 +104,7 @@ export default function CarouselCreator() {
   const [dlIdx,setDlIdx]=useState<Record<number,boolean>>({});
   const [dlAll,setDlAll]=useState(false);
   const [align,setAlign]=useState({...defAlign});
+  const [instagramCaption, setInstagramCaption] = useState<string>('');
   
   const alignLabels:Record<keyof typeof align, string> = {
     tag: "Top Tag (MARKETS)", bullet: "Bullet Dots", footer: "Footer Text",
@@ -136,6 +137,10 @@ export default function CarouselCreator() {
       setExtraImgs(savedState.extraImgs||{});
       setAlign(savedState.align||defAlign);
       if(savedState.data) msg('Session restored from auto-save','ok');
+      if (savedState.jsonText) {
+        const { captionPart } = extractJsonAndCaption(savedState.jsonText);
+        setInstagramCaption(captionPart);
+      }
     }
   },[]);
 
@@ -174,6 +179,7 @@ export default function CarouselCreator() {
       const d=JSON.parse(jsonPart) as CarouselData;
       if(!d.slides?.length){msg('No slides found','error');return;}
       setData(d); setScreenshots({}); setImgAdjs({}); setExtraImgs({});
+      setInstagramCaption(captionPart);
       msg(`✓ ${d.slides.length} slides rendered`,'ok');
       const item: HistoryItem = {
         id: `h_${Date.now()}`, title: d.title || 'Untitled Carousel', savedAt: new Date().toISOString(),
@@ -305,6 +311,18 @@ export default function CarouselCreator() {
         await new Promise(r => setTimeout(r, 600));
       }
       
+      // Write caption.txt inside directory if present
+      if (instagramCaption) {
+        try {
+          const captionFileHandle = await subDir.getFileHandle('caption.txt', { create: true });
+          const captionWritable = await captionFileHandle.createWritable();
+          await captionWritable.write(instagramCaption);
+          await captionWritable.close();
+        } catch (e) {
+          console.error('Failed to write caption.txt inside directory:', e);
+        }
+      }
+
       setFolderPrefix(prev => {
         const match = prev.match(/^(.*?)(\d+)$/);
         if (match) {
@@ -324,7 +342,21 @@ export default function CarouselCreator() {
     } finally {
       setDlAll(false);
     }
-  }, [data, folderPrefix, rW, rH, setFolderPrefix, dirHandle]);
+  }, [data, folderPrefix, rW, rH, setFolderPrefix, dirHandle, instagramCaption]);
+
+  const dlCaptionFile = useCallback(() => {
+    if (!instagramCaption) {
+      msg('No caption available to download', 'error');
+      return;
+    }
+    const a = document.createElement('a');
+    const name = (data?.title || 'carousel').replace(/[^a-z0-9]/gi, '-').toLowerCase();
+    a.download = `shamsgs-${name}-caption.txt`;
+    const blob = new Blob([instagramCaption], { type: 'text/plain;charset=utf-8' });
+    a.href = URL.createObjectURL(blob);
+    a.click();
+    msg('✓ Caption downloaded', 'ok');
+  }, [data, instagramCaption]);
 
   const pasteAndRender=async()=>{
     try{
@@ -338,6 +370,7 @@ export default function CarouselCreator() {
       const d=JSON.parse(jsonPart) as CarouselData;
       if(!d.slides?.length){msg('No slides found','error');return;}
       setData(d); setScreenshots({}); setImgAdjs({}); setExtraImgs({});
+      setInstagramCaption(captionPart);
       msg(`✓ ${d.slides.length} slides rendered`,'ok');
       const item:HistoryItem={
         id:`h_${Date.now()}`,
@@ -407,7 +440,7 @@ export default function CarouselCreator() {
       {tab==='prompt'&&<PromptBuilder/>}
       {tab==='builder'&&<BuilderTab onLoad={j=>{setJsonText(j);setTab('creator');msg('JSON loaded — click Render','ok');}}/>}
       {tab==='themes'&&<ThemeEditor customThemes={customThemes} setCustomThemes={setCustomThemes}/>}
-      {tab==='history'&&<HistoryPanel history={history} loadHistory={h=>{setJsonText(h.jsonText);setTheme(h.theme);setRatio(h.ratio);setAlign({...defAlign, ...h.align});setImgAdjs(h.imgAdjs);setTab('creator');msg('History loaded — click Render','ok');}} delHistory={id=>setHistory(prev=>prev.filter(x=>x.id!==id))} updateHistoryItem={updateHistoryItem}/>}
+      {tab==='history'&&<HistoryPanel history={history} loadHistory={h=>{setJsonText(h.jsonText);setTheme(h.theme);setRatio(h.ratio);setAlign({...defAlign, ...h.align});setImgAdjs(h.imgAdjs);setInstagramCaption(h.instagramCaption||'');setTab('creator');msg('History loaded — click Render','ok');}} delHistory={id=>setHistory(prev=>prev.filter(x=>x.id!==id))} updateHistoryItem={updateHistoryItem}/>}
       
       {tab==='creator'&&(
         <div style={{display:'flex',gap:24,height:'calc(100vh - 200px)'}}>
@@ -422,6 +455,7 @@ export default function CarouselCreator() {
                     const h=history.find(x=>x.id===e.target.value);
                     if(h){
                       setJsonText(h.jsonText);setTheme(h.theme);setRatio(h.ratio);setAlign({...defAlign, ...h.align});setImgAdjs(h.imgAdjs);
+                      setInstagramCaption(h.instagramCaption||'');
                       msg('History loaded — click Render','ok');
                     }
                     e.target.value='';
@@ -453,9 +487,12 @@ export default function CarouselCreator() {
 
               <button onClick={render} style={{width:'100%',padding:12,marginTop:16,background:'linear-gradient(135deg,#C9A84C,#E8C96A)',color:'#050E1C',fontFamily:"'Space Mono',monospace",fontSize:12,fontWeight:700,letterSpacing:2,border:'none',borderRadius:8,cursor:'pointer'}}>▶ RENDER SLIDES</button>
               
-              {data&&<div style={{display:'flex',flexDirection:'column',gap:8,marginTop:8}}>
+               {data&&<div style={{display:'flex',flexDirection:'column',gap:8,marginTop:8}}>
                 <div style={{display:'flex',gap:8}}>
                   <button onClick={dlAllSlides} disabled={dlAll} style={{flex:1,padding:11,background:dlAll?'rgba(26,111,168,0.5)':'linear-gradient(135deg,#1a6fa8,#2a8fd4)',color:'#fff',fontFamily:"'Space Mono',monospace",fontSize:10,fontWeight:700,letterSpacing:1.5,border:'none',borderRadius:8,cursor:dlAll?'not-allowed':'pointer'}}>{dlAll?status.msg:'⬇ ALL PNG'}</button>
+                  {instagramCaption && (
+                    <button onClick={dlCaptionFile} style={{flex:1,padding:11,background:'rgba(201,168,76,0.12)',border:'1px solid rgba(201,168,76,0.3)',color:'#E8C96A',fontFamily:"'Space Mono',monospace",fontSize:10,borderRadius:8,cursor:'pointer'}}>📝 CAPTION</button>
+                  )}
                   <button onClick={saveToHistory} style={{flex:1,padding:11,background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',color:'#A3B8CC',fontFamily:"'Space Mono',monospace",fontSize:10,borderRadius:8,cursor:'pointer'}}>💾 Save</button>
                 </div>
                 
