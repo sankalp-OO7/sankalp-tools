@@ -146,12 +146,15 @@ export default function PromptBuilder() {
 
   const setN = (v: string) => setNRaw(v);
 
-  const carouselPrompt = buildCarouselPrompt(topic, type, cat, n, ss);
-  const captionPrompt = buildCaptionPrompt(topic, type, cat, n);
+  const topics = topic.split('\n').map(t => t.trim()).filter(Boolean);
+  const primaryTopic = topics[0] || '';
+
+  const carouselPrompt = buildCarouselPrompt(primaryTopic, type, cat, n, ss);
+  const captionPrompt = buildCaptionPrompt(primaryTopic, type, cat, n);
   const combinedPrompt = `You are a social media writer for ShamsGS (shamsgs.com), a UAE-based AI-powered forex trading platform.
 Your task is to generate BOTH a Carousel JSON and a matching Instagram Caption.
 
-TOPIC: ${topic || '[enter topic]'}
+TOPIC: ${primaryTopic || '[enter topic]'}
 CARROUSEL TYPE: ${type}
 CATEGORY TAG: ${cat || 'SHAMSGS'}
 NUMBER OF SLIDES: ${n}
@@ -210,10 +213,11 @@ Instagram Caption
       if (!text.trim()) { toast('Clipboard is empty', 'err'); return; }
       const newTopic = text.trim();
       setTopic(newTopic);
-      // Build prompt fresh with newTopic — no stale state issue
-      const freshCarousel = buildCarouselPrompt(newTopic, type, cat, n, ss);
-      const freshCaption = buildCaptionPrompt(newTopic, type, cat, n);
-      const freshCombined = `You are a social media writer for ShamsGS (shamsgs.com), a UAE-based AI-powered forex trading platform.
+      const subtopics = newTopic.split('\n').map(x => x.trim()).filter(Boolean);
+      if (subtopics.length <= 1) {
+        const freshCarousel = buildCarouselPrompt(newTopic, type, cat, n, ss);
+        const freshCaption = buildCaptionPrompt(newTopic, type, cat, n);
+        const freshCombined = `You are a social media writer for ShamsGS (shamsgs.com), a UAE-based AI-powered forex trading platform.
 Your task is to generate BOTH a Carousel JSON and a matching Instagram Caption.
 
 TOPIC: ${newTopic}
@@ -267,8 +271,11 @@ Instagram Caption
 [Hashtags]
 \`\`\`
 `;
-      await navigator.clipboard.writeText(freshCombined);
-      toast('✓ Topic pasted & prompt copied!', 'ok');
+        await navigator.clipboard.writeText(freshCombined);
+        toast('✓ Topic pasted & prompt copied!', 'ok');
+      } else {
+        toast(`✓ Pasted ${subtopics.length} topics. Copy them from the list on the right!`, 'ok');
+      }
     } catch {
       toast('Could not read clipboard', 'err');
     }
@@ -301,7 +308,7 @@ Instagram Caption
             <div style={{ fontFamily: "'Space Mono',monospace", fontSize: 10, letterSpacing: 2, color: '#C9A84C', textTransform: 'uppercase' }}>Topic / Subject</div>
             <button onClick={pasteTopicAndCopy} style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.12)', color: '#A3B8CC', fontFamily: "'Space Mono',monospace", fontSize: 9, padding: '3px 10px', borderRadius: 5, cursor: 'pointer', letterSpacing: 1 }}>⎘ PASTE</button>
           </div>
-          <textarea value={topic} onChange={e => setTopic(e.target.value)} placeholder="UAE AI trading trends in 2025" maxLength={200} rows={2} style={{ ...inpSt, resize: 'vertical' }} />
+          <textarea value={topic} onChange={e => setTopic(e.target.value)} placeholder="UAE AI trading trends in 2025&#10;Forex news in Dubai&#10;Forex prices and gold impact" maxLength={2000} rows={4} style={{ ...inpSt, resize: 'vertical' }} />
         </div>
 
         {inp('Carousel Type', type, setType, '', undefined, 'select', ['news', 'tech'])}
@@ -335,15 +342,98 @@ Instagram Caption
 
       {/* Right: preview panel */}
       <div style={{ flex: 1, background: '#030810', borderRadius: 12, border: '1px solid rgba(255,255,255,.08)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: '10px 18px', borderBottom: '1px solid rgba(255,255,255,.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <div style={{ fontFamily: "'Space Mono',monospace", fontSize: 11, color: '#A3B8CC' }}>Prompt Preview</div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <CopyButton text={carouselPrompt} label='⎘ JSON ONLY' size='sm' />
-            <CopyButton text={captionPrompt} label='⎘ CAPTION ONLY' size='sm' />
-            <CopyButton text={combinedPrompt} label='⎘ COMBINED' size='sm' />
+        {topics.length <= 1 ? (
+          <>
+            <div style={{ padding: '10px 18px', borderBottom: '1px solid rgba(255,255,255,.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+              <div style={{ fontFamily: "'Space Mono',monospace", fontSize: 11, color: '#A3B8CC' }}>Prompt Preview</div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <CopyButton text={carouselPrompt} label='⎘ JSON ONLY' size='sm' />
+                <CopyButton text={captionPrompt} label='⎘ CAPTION ONLY' size='sm' />
+                <CopyButton text={combinedPrompt} label='⎘ COMBINED' size='sm' />
+              </div>
+            </div>
+            <pre style={{ flex: 1, overflowY: 'auto', padding: 20, fontFamily: "'Space Mono',monospace", fontSize: 11, color: '#A3B8CC', lineHeight: 1.7, whiteSpace: 'pre-wrap', margin: 0 }}>{combinedPrompt}</pre>
+          </>
+        ) : (
+          <div style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ fontFamily: "'Space Mono',monospace", fontSize: 12, color: '#E8C96A', borderBottom: '1px solid rgba(255,255,255,.07)', paddingBottom: 8, marginBottom: 8 }}>
+              📋 LIST OF GENERATED PROMPTS ({topics.length} topics)
+            </div>
+            {topics.map((t, idx) => {
+              const carPr = buildCarouselPrompt(t, type, cat, n, ss);
+              const capPr = buildCaptionPrompt(t, type, cat, n);
+              const combPr = `You are a social media writer for ShamsGS (shamsgs.com), a UAE-based AI-powered forex trading platform.
+Your task is to generate BOTH a Carousel JSON and a matching Instagram Caption.
+
+TOPIC: ${t}
+CARROUSEL TYPE: ${type}
+CATEGORY TAG: ${cat || 'SHAMSGS'}
+NUMBER OF SLIDES: ${n}
+SCREENSHOTS: ${ss || 'none'}
+
+--------------------------------------------------
+TASK 1: CAROUSEL JSON
+--------------------------------------------------
+Generate a JSON following the exact schema and character limits:
+${carPr}
+
+--------------------------------------------------
+TASK 2: INSTAGRAM CAPTION
+--------------------------------------------------
+Generate a caption following these requirements:
+${capPr}
+
+--------------------------------------------------
+CRITICAL FORMATTING REQUIREMENT (SINGLE COPY BUTTON)
+--------------------------------------------------
+To let the user copy all generated content in one single click, you MUST output BOTH the Carousel JSON and the Instagram Caption together inside a SINGLE markdown code block (using triple backticks).
+Do NOT write the caption outside of the code block.
+
+Format your entire final output exactly like this:
+\`\`\`
+{
+  "type": "${type}",
+  "title": "...",
+  "category": "${cat || 'SHAMSGS'}",
+  "slides": [
+    ...
+  ]
+}
+
+Instagram Caption
+
+[Hook text]
+
+[Body text]
+
+[Value Statement]
+
+[CTA]
+
+.
+.
+.
+[Hashtags]
+\`\`\`
+`;
+              return (
+                <div key={idx} style={{ padding: 14, borderRadius: 10, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#e8e8f0', fontFamily: "'Space Mono',monospace", textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', flex: 1 }}>
+                      #{idx + 1}: {t}
+                    </div>
+                    <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                      <CopyButton text={carPr} label='JSON' size='sm' />
+                      <CopyButton text={capPr} label='CAPTION' size='sm' />
+                      <CopyButton text={combPr} label='COMBINED' size='sm' />
+                    </div>
+                  </div>
+                  <pre style={{ margin: 0, padding: 8, background: '#02050a', borderRadius: 6, fontSize: 10, color: '#6b6b80', maxHeight: 80, overflowY: 'auto', fontFamily: "'Space Mono',monospace", whiteSpace: 'pre-wrap' }}>{combPr}</pre>
+                </div>
+              );
+            })}
           </div>
-        </div>
-        <pre style={{ flex: 1, overflowY: 'auto', padding: 20, fontFamily: "'Space Mono',monospace", fontSize: 11, color: '#A3B8CC', lineHeight: 1.7, whiteSpace: 'pre-wrap', margin: 0 }}>{combinedPrompt}</pre>
+        )}
       </div>
     </div>
   );

@@ -358,6 +358,36 @@ export default function CarouselCreator() {
     msg('✓ Caption downloaded', 'ok');
   }, [data, instagramCaption]);
 
+  const getCoverImagePrompt = () => {
+    if (!data) return '';
+    const t = data.title || 'Forex Trading';
+    const cat = data.category || 'MARKETS';
+    
+    let arStyle = '4:5 aspect ratio (vertical)';
+    let mjAr = '--ar 4:5';
+    if (ratio === '9:16') {
+      arStyle = '9:16 aspect ratio (tall vertical)';
+      mjAr = '--ar 9:16';
+    } else if (ratio === '1:1') {
+      arStyle = '1:1 aspect ratio (square)';
+      mjAr = '--ar 1:1';
+    }
+
+    return `Create a high-impact, professional stock photo or 3D graphic to be used as a cover image for a financial market carousel.
+
+TOPIC/TITLE: "${t}"
+CATEGORY: "${cat}"
+TARGET AUDIENCE: Premium forex traders and retail investors.
+ASPECT RATIO: ${arStyle}
+
+CRITICAL COMPOSITION RULES:
+1. TEXT OVERLAY SAFE ZONE: The bottom 45% of this image will be covered by bold typography (title and subtitle) on a dark/gradient background. The primary subject, central focus, and key details MUST be positioned in the upper 55% of the image.
+2. The background should be clean, abstract or high-tech, and not cluttered, allowing text to remain legible.
+3. VISUAL STYLE: Professional, sleek financial theme. Think glassmorphism, glowing gold/blue accents, abstract candlestick charts, clean futuristic trading terminal interface, high-end Dubai/UAE skylines, gold assets, bull markets, or clean technology elements. Avoid cheesy/cluttered cartoon illustrations.
+4. MIDJOURNEY PARAMETERS:
+Professional financial editorial photography, clean composition, minimalist background, cinematic lighting, 8k resolution, photorealistic ${mjAr}`;
+  };
+
   const pasteAndRender=async()=>{
     try{
       const text=await navigator.clipboard.readText();
@@ -549,6 +579,20 @@ export default function CarouselCreator() {
                             <input type="file" accept="image/*" style={{display:'none'}} ref={i===0?coverSsInputRef:undefined} onChange={e=>{if(e.target.files?.[0])handleSS(i,e.target.files[0]);}}/>
                           </label>
                           {screenshots[i] && <AdjPanel idx={i} src={screenshots[i]} adj={imgAdjs[i]??defAdj} onChange={a=>setImgAdjs(p=>({...p,[i]:a}))}/>}
+                          {i === 0 && (
+                            <div style={{marginTop:8,padding:10,background:'rgba(201,168,76,0.06)',border:'1px solid rgba(201,168,76,0.2)',borderRadius:8}}>
+                              <div style={{fontFamily:"'Space Mono',monospace",fontSize:9,color:'#E8C96A',marginBottom:6,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                                <span>🎨 COVER IMAGE PROMPT</span>
+                                <button onClick={() => {
+                                  navigator.clipboard.writeText(getCoverImagePrompt());
+                                  msg('✓ Cover image prompt copied!', 'ok');
+                                }} style={{background:'rgba(201,168,76,0.15)',border:'1px solid rgba(201,168,76,0.3)',color:'#E8C96A',fontSize:8,padding:'2px 6px',borderRadius:4,cursor:'pointer'}}>⎘ COPY</button>
+                              </div>
+                              <div style={{fontSize:9,color:'#8BA5C8',lineHeight:1.4,maxHeight:60,overflowY:'auto',whiteSpace:'pre-wrap',fontFamily:"'Space Mono',monospace"}}>
+                                {getCoverImagePrompt()}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
 
