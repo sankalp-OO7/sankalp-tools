@@ -31,13 +31,72 @@ function useLocalStorage<T>(key:string, initialValue:T): [T, (v:T|((val:T)=>T))=
   return [storedValue, setValue];
 }
 
+// ── Extract JSON and Caption Helper ──────────────────────────────────────────
+function extractJsonAndCaption(text: string): { jsonPart: string; captionPart: string; error?: string } {
+  const trimmed = text.trim();
+  const firstBrace = trimmed.indexOf('{');
+  if (firstBrace === -1) {
+    return { jsonPart: '', captionPart: trimmed, error: 'No JSON object found (missing {)' };
+  }
+  
+  let balance = 0;
+  let inString = false;
+  let escape = false;
+  let endBrace = -1;
+  
+  for (let i = firstBrace; i < trimmed.length; i++) {
+    const char = trimmed[i];
+    if (escape) {
+      escape = false;
+      continue;
+    }
+    if (char === '\\') {
+      escape = true;
+      continue;
+    }
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (!inString) {
+      if (char === '{') {
+        balance++;
+      } else if (char === '}') {
+        balance--;
+        if (balance === 0) {
+          endBrace = i;
+          break;
+        }
+      }
+    }
+  }
+  
+  if (endBrace === -1) {
+    const lastBrace = trimmed.lastIndexOf('}');
+    if (lastBrace > firstBrace) {
+      const jsonPart = trimmed.slice(firstBrace, lastBrace + 1);
+      const textBefore = trimmed.slice(0, firstBrace).trim();
+      const textAfter = trimmed.slice(lastBrace + 1).trim();
+      const captionPart = [textBefore, textAfter].filter(Boolean).join('\n\n');
+      return { jsonPart, captionPart };
+    }
+    return { jsonPart: '', captionPart: trimmed, error: 'Unbalanced braces in JSON' };
+  }
+  
+  const jsonPart = trimmed.slice(firstBrace, endBrace + 1);
+  const textBefore = trimmed.slice(0, firstBrace).trim();
+  const textAfter = trimmed.slice(endBrace + 1).trim();
+  const captionPart = [textBefore, textAfter].filter(Boolean).join('\n\n');
+  return { jsonPart, captionPart };
+}
+
 // ── Main Page ────────────────────────────────────────────────────────────────
 export default function CarouselCreator() {
   const [tab,setTab]=useLocalStorage<Tab>(LS.TAB,'creator');
   const [jsonText,setJsonText]=useState('');
   const [data,setData]=useState<CarouselData|null>(null);
   const [theme,setTheme]=useState<string>('news');
-  const [ratio,setRatio]=useState<RatioKey>('1:1');
+  const [ratio,setRatio]=useState<RatioKey>('4:5');
   const [screenshots,setScreenshots]=useState<Record<number,string>>({});
   const [imgAdjs,setImgAdjs]=useState<Record<number,ImgAdj>>({});
   const [extraImgs,setExtraImgs]=useState<Record<number,ExtraImg[]>>({});
@@ -70,7 +129,7 @@ export default function CarouselCreator() {
       setJsonText(savedState.jsonText||'');
       setData(savedState.data||null);
       setTheme(savedState.theme||'news');
-      setRatio(savedState.ratio||'1:1');
+      setRatio(savedState.ratio||'4:5');
       setImgAdjs(savedState.imgAdjs||{});
       setExtraImgs(savedState.extraImgs||{});
       setAlign(savedState.align||defAlign);
@@ -104,16 +163,22 @@ export default function CarouselCreator() {
   const msg=(m:string,t='')=>setStatus({msg:m,type:t});
 
   const render=()=>{
+    const { jsonPart, captionPart, error } = extractJsonAndCaption(jsonText);
+    if (error) {
+      msg('Format Error: ' + error, 'error');
+      return;
+    }
     try{
-      const d=JSON.parse(jsonText) as CarouselData;
+      const d=JSON.parse(jsonPart) as CarouselData;
       if(!d.slides?.length){msg('No slides found','error');return;}
       setData(d); setScreenshots({}); setImgAdjs({}); setExtraImgs({});
       msg(`✓ ${d.slides.length} slides rendered`,'ok');
       const item: HistoryItem = {
         id: `h_${Date.now()}`, title: d.title || 'Untitled Carousel', savedAt: new Date().toISOString(),
-        jsonText, theme, ratio, align, imgAdjs: {}
+        jsonText, theme, ratio, align, imgAdjs: {},
+        instagramCaption: captionPart
       };
-      setHistory(prev => [item, ...prev].slice(0, 10));
+      setHistory(prev => [item, ...prev].slice(0, 60));
     }catch(e){ msg('Invalid JSON: '+(e as Error).message,'error'); }
   };
 
@@ -179,24 +244,45 @@ export default function CarouselCreator() {
     try{
       const text=await navigator.clipboard.readText();
       setJsonText(text);
-      const d=JSON.parse(text) as CarouselData;
+      const { jsonPart, captionPart, error } = extractJsonAndCaption(text);
+      if (error) {
+        msg('Format Error: ' + error, 'error');
+        return;
+      }
+      const d=JSON.parse(jsonPart) as CarouselData;
       if(!d.slides?.length){msg('No slides found','error');return;}
       setData(d); setScreenshots({}); setImgAdjs({}); setExtraImgs({});
       msg(`✓ ${d.slides.length} slides rendered`,'ok');
-      const item:HistoryItem={id:`h_${Date.now()}`,title:d.title||'Untitled Carousel',savedAt:new Date().toISOString(),jsonText:text,theme,ratio,align,imgAdjs:{}};
-      setHistory(prev=>[item,...prev].slice(0,10));
+      const item:HistoryItem={
+        id:`h_${Date.now()}`,
+        title:d.title||'Untitled Carousel',
+        savedAt:new Date().toISOString(),
+        jsonText:text,
+        theme,
+        ratio,
+        align,
+        imgAdjs:{},
+        instagramCaption:captionPart
+      };
+      setHistory(prev=>[item,...prev].slice(0, 60));
       setTimeout(()=>{ coverSsInputRef.current?.click(); },400);
     }catch(e:any){ msg('Paste/render error: '+(e?.message||String(e)),'error'); }
   };
 
   const saveToHistory = () => {
     if(!data) return;
+    const { jsonPart, captionPart } = extractJsonAndCaption(jsonText);
     const item: HistoryItem = {
       id: `h_${Date.now()}`, title: data.title || 'Untitled Carousel', savedAt: new Date().toISOString(),
-      jsonText, theme, ratio, align, imgAdjs
+      jsonText, theme, ratio, align, imgAdjs,
+      instagramCaption: captionPart
     };
-    setHistory(prev => [item, ...prev].slice(0, 10)); // Keep last 10
+    setHistory(prev => [item, ...prev].slice(0, 60)); // Keep last 60
     msg('✓ Saved to History','ok');
+  };
+
+  const updateHistoryItem = (id: string, updated: Partial<HistoryItem>) => {
+    setHistory(prev => prev.map(h => h.id === id ? { ...h, ...updated } : h));
   };
 
   const slidesNeedingSS=data?.slides.map((s,i)=>({s,i})).filter(({s})=>s.slide_type==='cover'||s.has_screenshot)||[];
@@ -235,7 +321,7 @@ export default function CarouselCreator() {
       {tab==='prompt'&&<PromptBuilder/>}
       {tab==='builder'&&<BuilderTab onLoad={j=>{setJsonText(j);setTab('creator');msg('JSON loaded — click Render','ok');}}/>}
       {tab==='themes'&&<ThemeEditor customThemes={customThemes} setCustomThemes={setCustomThemes}/>}
-      {tab==='history'&&<HistoryPanel history={history} loadHistory={h=>{setJsonText(h.jsonText);setTheme(h.theme);setRatio(h.ratio);setAlign({...defAlign, ...h.align});setImgAdjs(h.imgAdjs);setTab('creator');msg('History loaded — click Render','ok');}} delHistory={id=>setHistory(prev=>prev.filter(x=>x.id!==id))}/>}
+      {tab==='history'&&<HistoryPanel history={history} loadHistory={h=>{setJsonText(h.jsonText);setTheme(h.theme);setRatio(h.ratio);setAlign({...defAlign, ...h.align});setImgAdjs(h.imgAdjs);setTab('creator');msg('History loaded — click Render','ok');}} delHistory={id=>setHistory(prev=>prev.filter(x=>x.id!==id))} updateHistoryItem={updateHistoryItem}/>}
       
       {tab==='creator'&&(
         <div style={{display:'flex',gap:24,height:'calc(100vh - 200px)'}}>

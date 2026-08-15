@@ -62,6 +62,18 @@ const navItems: NavItem[] = [
     ),
     badge: 'NEW',
   },
+  {
+    label: 'Showcase',
+    href: '/tools/showcase',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-5 h-5">
+        <rect x="2" y="5" width="5" height="14" rx="1.5"/>
+        <rect x="9.5" y="3" width="5" height="18" rx="1.5"/>
+        <rect x="17" y="6" width="5" height="12" rx="1.5"/>
+      </svg>
+    ),
+    badge: 'NEW',
+  },
 ];
 
 const bottomItems = [
