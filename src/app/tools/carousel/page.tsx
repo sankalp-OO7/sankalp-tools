@@ -375,37 +375,52 @@ export default function CarouselCreator() {
     const headline = firstSlide?.headline || t;
     const subheadline = firstSlide?.subheadline || '';
     
-    let arStyle = '4:5 aspect ratio (portrait layout, 1080x1350px)';
+    // Auto-detect subject matter to customize visual hook elements dynamically
+    const hasDubai = /dubai|uae|gulf/i.test(t + ' ' + headline + ' ' + subheadline);
+    const hasPerson = /man|person|he|she|trader|investor|ceo|founder|expert|billionaire|people/i.test(t + ' ' + headline + ' ' + subheadline);
+    const hasForex = /forex|currency|eur|usd|fx|gold|oil|markets|chart|price/i.test(t + ' ' + headline + ' ' + subheadline);
+
+    // Dynamic Visual Setup
+    let mainBackground = 'A sleek, premium dark backdrop with a rich, smooth dark-blue-to-black radial gradient and glowing amber/gold dust particles.';
+    let circleContent = 'A glowing, high-contrast digital forex chart showing a sharp green candlestick surge, representing financial opportunity.';
+
+    if (hasDubai) {
+      mainBackground = 'A stunning, high-contrast photo of the futuristic Dubai skyline (Burj Khalifa visible) at golden hour/dusk, with deep orange and purple sky gradients.';
+    }
+
+    if (hasPerson) {
+      circleContent = 'A high-definition, close-up profile of a confident professional trader/investor (man in a modern suit) analyzing live neon financial data, radiating focus and expertise.';
+    } else if (hasForex) {
+      circleContent = 'A glowing 3D glass sphere or circular lens displaying a detailed, high-contrast forex trading candlestick chart with gold currency symbols floating inside.';
+    }
+
+    // Determine aspect ratio for Midjourney / DALL-E
     let mjAr = '--ar 4:5';
     if (ratio === '9:16') {
-      arStyle = '9:16 aspect ratio (tall vertical story, 1080x1920px)';
       mjAr = '--ar 9:16';
     } else if (ratio === '1:1') {
-      arStyle = '1:1 aspect ratio (square feed, 1080x1080px)';
       mjAr = '--ar 1:1';
     }
 
-    return `Create a high-impact, attention-grabbing viral Instagram cover image. The visual must look premium, modern, and act as a powerful psychological hook to stop the user from scrolling.
+    return `Create a high-impact, premium viral Instagram cover image designed to maximize swipe-through rates using psychological curiosity hooks.
 
-THEME / DATA TO INCORPORATE:
-- MAIN HOOK/TITLE: "${headline}"
-- CONTEXT/SUBHEAD: "${subheadline}"
+THEME / METADATA:
 - CATEGORY: "${cat}"
+- HOOK HEADLINE: "${headline}"
+- SUBTITLE: "${subheadline}"
 
-IMAGE DISPLAY SPACE & SAFE ZONE COMPOSITION RULES:
-1. SAFE ZONE: The bottom 45% of the image WILL be covered by a dark gradient overlay and bold text. Therefore, the main subject, people, objects, and primary action MUST be perfectly positioned in the upper 55% of the frame.
-2. Keep the background in the bottom 45% clean, simple, or abstract, letting the white/accent overlay text remain highly readable.
-3. No text should be generated inside the image itself.
+COMPOSITION & CRITICAL VISUAL HOOK RULES (Based on 2026 Instagram Hook Design Best Practices):
+1. TOP 60% SAFE ZONE: All critical visual elements, subjects, and key graphical details MUST be composed strictly within the upper 60% of the canvas. The bottom 40% will have dark gradients and bold title text overlays, so keep the bottom area simple, clean, and uncluttered.
+2. NO TEXT GENERATED ON THE IMAGE: Do not generate any alphabetic text, labels, or numbers inside the image.
+3. PREMIUM CONTRAST: Use premium color gradients (deep royal blue to pitch black, accented with bright amber and gold) for high visual contrast to stop scrollers instantly.
 
-VISUAL CONCEPT (DETAILED):
-- SUBJECT: A premium and cinematic composition. Either:
-  a) A professional trader/investor in a sleek, ultra-modern Dubai penthouse office looking focused or confidently analyzing live golden and blue neon candlestick charts on high-end glass screens.
-  b) A metaphorical conceptual render: a transparent glass bull and bear charging through a glowing holographic terminal, surrounded by floating gold assets, dynamic energy lines, and fluid 3D shapes.
-  c) Premium objects like a luxury smartphone displaying live trading signals with a background of glowing financial charts and a blurred, elegant Dubai skyline at dusk.
-- LIGHTING & STYLE: Cinematic moody lighting with vibrant accents of gold, electric blue, and teal. Sleek glassmorphism textures, depth of field with a beautifully blurred background, photorealistic, 8k, Octane Render style finish, premium financial editorial photography.
+SPECIFIC SCENE COMPOSITION:
+- MAIN BACKGROUND: ${mainBackground}
+- INSET VISUAL HOOK: In the upper center of the frame, render a highly detailed, floating glassmorphic circle (a clean circular lens or sphere). Inside this circle, show: ${circleContent}
+- TRANSITIONS & EFFECT: The floating circle has a glowing gold neon outline and a subtle glass reflection, creating a layered, multi-dimensional 3D effect against the background.
 
 MIDJOURNEY PARAMETERS:
-Professional financial editorial, cinematic lighting, dramatic contrast, depth of field, photorealistic, premium visual hook, 8k resolution, volumetric lighting ${mjAr} --v 6.0`;
+Professional financial editorial photography, volumetric cinematic lighting, smooth gradients, depth of field, high-contrast, premium 3D render style, 8k resolution, volumetric glow ${mjAr} --v 6.0`;
   };
 
   const loadHistoryItem = (h: HistoryItem) => {
