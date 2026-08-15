@@ -495,6 +495,7 @@ export default function CarouselCreator() {
                   )}
                   <button onClick={saveToHistory} style={{flex:1,padding:11,background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',color:'#A3B8CC',fontFamily:"'Space Mono',monospace",fontSize:10,borderRadius:8,cursor:'pointer'}}>💾 Save</button>
                 </div>
+                <button onClick={() => window.open(`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(data.title || '')}`, '_blank')} style={{width:'100%',padding:10,background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.1)',color:'#A3B8CC',fontFamily:"'Space Mono',monospace",fontSize:10,fontWeight:700,letterSpacing:1,borderRadius:8,cursor:'pointer'}}>🔍 Search Images for Cover</button>
                 
                 <div style={{marginTop:8,borderTop:'1px dashed rgba(255,255,255,0.08)',paddingTop:8}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
@@ -518,7 +519,10 @@ export default function CarouselCreator() {
             {/* Screenshots & Extras */}
             {data && (
               <div style={{padding:16,borderRadius:12,background:'var(--card)',border:'1px solid var(--border)'}}>
-                <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,letterSpacing:2,color:'#C9A84C',textTransform:'uppercase',marginBottom:12}}>4 — Images & Overlays</div>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+                  <span style={{fontFamily:"'Space Mono',monospace",fontSize:10,letterSpacing:2,color:'#C9A84C',textTransform:'uppercase'}}>4 — Images & Overlays</span>
+                  <button onClick={() => window.open(`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(data.title || '')}`, '_blank')} style={{background:'rgba(201,168,76,0.12)',border:'1px solid rgba(201,168,76,0.3)',color:'#E8C96A',fontFamily:"'Space Mono',monospace",fontSize:9,padding:'3px 8px',borderRadius:5,cursor:'pointer'}}>🔍 SEARCH IMAGES</button>
+                </div>
                 {allSlides.map(({s,i})=>{
                   const isPrimary = s.slide_type==='cover'||s.has_screenshot;
                   const exs = extraImgs[i]||[];
