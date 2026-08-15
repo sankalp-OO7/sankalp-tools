@@ -35,8 +35,17 @@ function useLocalStorage<T>(key:string, initialValue:T): [T, (v:T|((val:T)=>T))=
 function extractJsonAndCaption(text: string): { jsonPart: string; captionPart: string; error?: string } {
   const trimmed = text.trim();
   const firstBrace = trimmed.indexOf('{');
+  
+  const cleanCaption = (str: string) => {
+    return str
+      .replace(/```[a-zA-Z0-9]*/g, '')
+      .replace(/^(Instagram\s+)?Caption:\s*/i, '')
+      .replace(/^(Instagram\s+)?Caption\s*$/im, '')
+      .trim();
+  };
+
   if (firstBrace === -1) {
-    return { jsonPart: '', captionPart: trimmed, error: 'No JSON object found (missing {)' };
+    return { jsonPart: '', captionPart: cleanCaption(trimmed), error: 'No JSON object found (missing {)' };
   }
   
   let balance = 0;
@@ -75,18 +84,18 @@ function extractJsonAndCaption(text: string): { jsonPart: string; captionPart: s
     const lastBrace = trimmed.lastIndexOf('}');
     if (lastBrace > firstBrace) {
       const jsonPart = trimmed.slice(firstBrace, lastBrace + 1);
-      const textBefore = trimmed.slice(0, firstBrace).trim();
-      const textAfter = trimmed.slice(lastBrace + 1).trim();
-      const captionPart = [textBefore, textAfter].filter(Boolean).join('\n\n');
+      const textBefore = trimmed.slice(0, firstBrace);
+      const textAfter = trimmed.slice(lastBrace + 1);
+      const captionPart = cleanCaption([textBefore, textAfter].filter(Boolean).join('\n\n'));
       return { jsonPart, captionPart };
     }
-    return { jsonPart: '', captionPart: trimmed, error: 'Unbalanced braces in JSON' };
+    return { jsonPart: '', captionPart: cleanCaption(trimmed), error: 'Unbalanced braces in JSON' };
   }
   
   const jsonPart = trimmed.slice(firstBrace, endBrace + 1);
-  const textBefore = trimmed.slice(0, firstBrace).trim();
-  const textAfter = trimmed.slice(endBrace + 1).trim();
-  const captionPart = [textBefore, textAfter].filter(Boolean).join('\n\n');
+  const textBefore = trimmed.slice(0, firstBrace);
+  const textAfter = trimmed.slice(endBrace + 1);
+  const captionPart = cleanCaption([textBefore, textAfter].filter(Boolean).join('\n\n'));
   return { jsonPart, captionPart };
 }
 
@@ -362,30 +371,41 @@ export default function CarouselCreator() {
     if (!data) return '';
     const t = data.title || 'Forex Trading';
     const cat = data.category || 'MARKETS';
+    const firstSlide = data.slides?.[0];
+    const headline = firstSlide?.headline || t;
+    const subheadline = firstSlide?.subheadline || '';
     
-    let arStyle = '4:5 aspect ratio (vertical)';
+    let arStyle = '4:5 aspect ratio (portrait layout, 1080x1350px)';
     let mjAr = '--ar 4:5';
     if (ratio === '9:16') {
-      arStyle = '9:16 aspect ratio (tall vertical)';
+      arStyle = '9:16 aspect ratio (tall vertical story, 1080x1920px)';
       mjAr = '--ar 9:16';
     } else if (ratio === '1:1') {
-      arStyle = '1:1 aspect ratio (square)';
+      arStyle = '1:1 aspect ratio (square feed, 1080x1080px)';
       mjAr = '--ar 1:1';
     }
 
-    return `Create a high-impact, professional stock photo or 3D graphic to be used as a cover image for a financial market carousel.
+    return `Create a high-impact, attention-grabbing viral Instagram cover image. The visual must look premium, modern, and act as a powerful psychological hook to stop the user from scrolling.
 
-TOPIC/TITLE: "${t}"
-CATEGORY: "${cat}"
-TARGET AUDIENCE: Premium forex traders and retail investors.
-ASPECT RATIO: ${arStyle}
+THEME / DATA TO INCORPORATE:
+- MAIN HOOK/TITLE: "${headline}"
+- CONTEXT/SUBHEAD: "${subheadline}"
+- CATEGORY: "${cat}"
 
-CRITICAL COMPOSITION RULES:
-1. TEXT OVERLAY SAFE ZONE: The bottom 45% of this image will be covered by bold typography (title and subtitle) on a dark/gradient background. The primary subject, central focus, and key details MUST be positioned in the upper 55% of the image.
-2. The background should be clean, abstract or high-tech, and not cluttered, allowing text to remain legible.
-3. VISUAL STYLE: Professional, sleek financial theme. Think glassmorphism, glowing gold/blue accents, abstract candlestick charts, clean futuristic trading terminal interface, high-end Dubai/UAE skylines, gold assets, bull markets, or clean technology elements. Avoid cheesy/cluttered cartoon illustrations.
-4. MIDJOURNEY PARAMETERS:
-Professional financial editorial photography, clean composition, minimalist background, cinematic lighting, 8k resolution, photorealistic ${mjAr}`;
+IMAGE DISPLAY SPACE & SAFE ZONE COMPOSITION RULES:
+1. SAFE ZONE: The bottom 45% of the image WILL be covered by a dark gradient overlay and bold text. Therefore, the main subject, people, objects, and primary action MUST be perfectly positioned in the upper 55% of the frame.
+2. Keep the background in the bottom 45% clean, simple, or abstract, letting the white/accent overlay text remain highly readable.
+3. No text should be generated inside the image itself.
+
+VISUAL CONCEPT (DETAILED):
+- SUBJECT: A premium and cinematic composition. Either:
+  a) A professional trader/investor in a sleek, ultra-modern Dubai penthouse office looking focused or confidently analyzing live golden and blue neon candlestick charts on high-end glass screens.
+  b) A metaphorical conceptual render: a transparent glass bull and bear charging through a glowing holographic terminal, surrounded by floating gold assets, dynamic energy lines, and fluid 3D shapes.
+  c) Premium objects like a luxury smartphone displaying live trading signals with a background of glowing financial charts and a blurred, elegant Dubai skyline at dusk.
+- LIGHTING & STYLE: Cinematic moody lighting with vibrant accents of gold, electric blue, and teal. Sleek glassmorphism textures, depth of field with a beautifully blurred background, photorealistic, 8k, Octane Render style finish, premium financial editorial photography.
+
+MIDJOURNEY PARAMETERS:
+Professional financial editorial, cinematic lighting, dramatic contrast, depth of field, photorealistic, premium visual hook, 8k resolution, volumetric lighting ${mjAr} --v 6.0`;
   };
 
   const loadHistoryItem = (h: HistoryItem) => {
