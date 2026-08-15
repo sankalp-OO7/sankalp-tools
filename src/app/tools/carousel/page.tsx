@@ -118,6 +118,7 @@ export default function CarouselCreator() {
 
   // LocalStorage state
   const [customThemes, setCustomThemes] = useLocalStorage<Record<string,ThemeDef>>(LS.THEMES, {});
+  const [folderPrefix, setFolderPrefix] = useLocalStorage<string>('cc_folder_prefix', '1');
   const [history, setHistory] = useLocalStorage<HistoryItem[]>(LS.HISTORY, []);
   
   // Backup state (excluding screenshots for size)
@@ -239,6 +240,58 @@ export default function CarouselCreator() {
     setDlAll(false);
     msg(`✓ All ${data.slides.length} slides saved as PNG`,'ok');
   },[data,dlSlide]);
+
+  const dlFolderSlides = useCallback(async () => {
+    if (!data) return;
+    setDlAll(true);
+    for (let i = 0; i < data.slides.length; i++) {
+      msg(`⏳ Saving slide ${i + 1}/${data.slides.length} to folder "${folderPrefix}"...`);
+      setDlIdx(p => ({ ...p, [i]: true }));
+      try {
+        const el = downloadRefs.current[i];
+        if (!el) throw new Error('Render element not ready');
+        await document.fonts.ready;
+        await new Promise(r => setTimeout(r, 200));
+        const hiResCanvas: HTMLCanvasElement = await html2canvas(el, {
+          width: rW, height: rH, scale: 2,
+          useCORS: true, allowTaint: true, backgroundColor: null, logging: false,
+          windowWidth: rW, windowHeight: rH,
+          x: 0, y: 0, scrollX: 0, scrollY: 0,
+          imageTimeout: 8000,
+        });
+        const out = document.createElement('canvas');
+        out.width = rW; out.height = rH;
+        const ctx = out.getContext('2d')!;
+        ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(hiResCanvas, 0, 0, rW, rH);
+        
+        const a = document.createElement('a');
+        a.download = `${folderPrefix}/${i + 1}.png`;
+        a.href = out.toDataURL('image/png');
+        a.click();
+      } catch (e: any) {
+        console.error('html2canvas error:', e);
+        msg('Download error: ' + (e?.message || String(e)), 'error');
+      } finally {
+        setDlIdx(p => ({ ...p, [i]: false }));
+      }
+      await new Promise(r => setTimeout(r, 600));
+    }
+    
+    setFolderPrefix(prev => {
+      const match = prev.match(/^(.*?)(\d+)$/);
+      if (match) {
+        const prefix = match[1];
+        const num = parseInt(match[2], 10);
+        const length = match[2].length;
+        const incrementedNum = String(num + 1).padStart(length, '0');
+        return prefix + incrementedNum;
+      }
+      return prev + ' 2';
+    });
+    setDlAll(false);
+    msg(`✓ Folder "${folderPrefix}" downloaded successfully`, 'ok');
+  }, [data, folderPrefix, rW, rH, setFolderPrefix]);
 
   const pasteAndRender=async()=>{
     try{
@@ -367,9 +420,19 @@ export default function CarouselCreator() {
 
               <button onClick={render} style={{width:'100%',padding:12,marginTop:16,background:'linear-gradient(135deg,#C9A84C,#E8C96A)',color:'#050E1C',fontFamily:"'Space Mono',monospace",fontSize:12,fontWeight:700,letterSpacing:2,border:'none',borderRadius:8,cursor:'pointer'}}>▶ RENDER SLIDES</button>
               
-              {data&&<div style={{display:'flex',gap:8,marginTop:8}}>
-                <button onClick={dlAllSlides} disabled={dlAll} style={{flex:2,padding:11,background:dlAll?'rgba(26,111,168,0.5)':'linear-gradient(135deg,#1a6fa8,#2a8fd4)',color:'#fff',fontFamily:"'Space Mono',monospace",fontSize:10,fontWeight:700,letterSpacing:1.5,border:'none',borderRadius:8,cursor:dlAll?'not-allowed':'pointer'}}>{dlAll?status.msg:'⬇ ALL PNG'}</button>
-                <button onClick={saveToHistory} style={{flex:1,padding:11,background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',color:'#A3B8CC',fontFamily:"'Space Mono',monospace",fontSize:10,borderRadius:8,cursor:'pointer'}}>💾 Save</button>
+              {data&&<div style={{display:'flex',flexDirection:'column',gap:8,marginTop:8}}>
+                <div style={{display:'flex',gap:8}}>
+                  <button onClick={dlAllSlides} disabled={dlAll} style={{flex:1,padding:11,background:dlAll?'rgba(26,111,168,0.5)':'linear-gradient(135deg,#1a6fa8,#2a8fd4)',color:'#fff',fontFamily:"'Space Mono',monospace",fontSize:10,fontWeight:700,letterSpacing:1.5,border:'none',borderRadius:8,cursor:dlAll?'not-allowed':'pointer'}}>{dlAll?status.msg:'⬇ ALL PNG'}</button>
+                  <button onClick={saveToHistory} style={{flex:1,padding:11,background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.1)',color:'#A3B8CC',fontFamily:"'Space Mono',monospace",fontSize:10,borderRadius:8,cursor:'pointer'}}>💾 Save</button>
+                </div>
+                
+                <div style={{marginTop:8,borderTop:'1px dashed rgba(255,255,255,0.08)',paddingTop:8}}>
+                  <label style={{display:'block',fontSize:10,fontFamily:"'Space Mono',monospace",color:'#C9A84C',marginBottom:4}}>Folder / Starting Index</label>
+                  <div style={{display:'flex',gap:6}}>
+                    <input type="text" value={folderPrefix} onChange={e=>setFolderPrefix(e.target.value)} style={{width:100,background:'#030810',border:'1px solid rgba(255,255,255,.1)',borderRadius:6,color:'#FFF',padding:'6px 10px',fontSize:12,fontFamily:"'Space Mono',monospace",outline:'none'}}/>
+                    <button onClick={dlFolderSlides} disabled={dlAll} style={{flex:1,padding:'6px 10px',background:dlAll?'rgba(201,168,76,0.5)':'linear-gradient(135deg,#C9A84C,#E8C96A)',color:'#050E1C',fontFamily:"'Space Mono',monospace",fontSize:10,fontWeight:700,letterSpacing:1,border:'none',borderRadius:8,cursor:dlAll?'not-allowed':'pointer'}}>{dlAll?'Saving...':'⬇ DL FOLDER'}</button>
+                  </div>
+                </div>
               </div>}
               
               <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:status.type==='error'?'#e05c5c':status.type==='ok'?'#4ecb82':'#A3B8CC',padding:'8px 0',textAlign:'center'}}>{status.msg}</div>
