@@ -82,6 +82,11 @@ STRICT CHARACTER LIMITS:
 - quote_source: 55 | list items: max 5 × 70 chars
 - cta_headline: 40 | cta_body: 90
 
+CURIOSITY HOOK & WRITING RULES:
+1. COVER SLIDE HEADLINE MUST BE A CURIOSITY HOOK: Do NOT use dry, boring news headlines (e.g. "Oil Prices Rising in Dubai"). Instead, write a powerful curiosity, myth-busting, statistic-shock, or promise hook in simple, everyday language (e.g., "Dubai oil is rising. What they aren't telling you" or "Is your cash safe? Dubai's oil shock explained").
+2. KEEP IT SIMPLE: Use active voice and simple, thumb-stopping language. Avoid corporate jargon and passive announcements.
+3. First slide must hook the audience instantly; subsequent slides should deliver high-value insights step-by-step.
+
 Slide types: cover, content, stat, quote, list, cta
 Rules: First=cover. Last=cta. has_screenshot:true only where needed. No emojis. Professional tone.
 
@@ -112,7 +117,7 @@ CATEGORY: ${c}
 NUMBER OF SLIDES: ${n}
 
 CAPTION REQUIREMENTS:
-1. HOOK (1–2 lines): Grab attention immediately. Start with a bold statement, question, or surprising fact. No emojis in the hook.
+1. HOOK (1–2 lines): Grab attention immediately. Start with a bold curiosity statement, intriguing question, or surprising statistic in simple, everyday language. Do NOT use emojis, clichés, or corporate introductions in the hook.
 2. BODY (3–5 lines): Expand on the topic with key insights from the carousel. Use line breaks for readability. Keep it conversational yet authoritative.
 3. VALUE STATEMENT (1–2 lines): Explain what the reader gains by saving/sharing this post.
 4. CALL TO ACTION (1 line): Direct, specific CTA — e.g. "Follow @shamsgs for daily market insights" or "Link in bio to start trading smarter."
