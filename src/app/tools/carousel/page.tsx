@@ -584,7 +584,7 @@ Professional financial editorial photography, volumetric cinematic lighting, smo
       {tab==='creator'&&(
         <div style={{display:'flex',gap:24,height:'calc(100vh - 200px)'}}>
           {/* Left panel */}
-          <div style={{width:340,flexShrink:0,overflowY:'auto',paddingRight:8}}>
+          <div style={{width:440,flexShrink:0,overflowY:'auto',paddingRight:8}}>
             <div style={{marginBottom:14,padding:18,borderRadius:12,background:'var(--card)',border:'1px solid var(--border)'}}>
               <div style={{fontFamily:"'Space Mono',monospace",fontSize:10,letterSpacing:2,color:'#C9A84C',textTransform:'uppercase',marginBottom:10,display:'flex',alignItems:'center',justifyContent:'space-between',gap:6}}>
                 <span>1 — Paste JSON</span>
@@ -835,10 +835,10 @@ Professional financial editorial photography, volumetric cinematic lighting, smo
                   borderRadius:16,padding:'24px 20px',boxShadow:'inset 0 0 40px rgba(0,0,0,0.5)'
                 }}>
                   <div style={{
-                    width:rW*0.5,height:rH*0.5,overflow:'hidden',borderRadius:12,
+                    width:rW*0.42,height:rH*0.42,overflow:'hidden',borderRadius:12,
                     boxShadow:'0 16px 60px rgba(0,0,0,.8)',position:'relative',flexShrink:0
                   }}>
-                    <div style={{transform:'scale(0.5)',transformOrigin:'top left',position:'absolute',top:0,left:0}}>
+                    <div style={{transform:'scale(0.42)',transformOrigin:'top left',position:'absolute',top:0,left:0}}>
                       <SlideEl {...slideProps(activeSlideIdx)}/>
                     </div>
                   </div>
@@ -883,8 +883,8 @@ Professional financial editorial photography, volumetric cinematic lighting, smo
                       }}
                     >
                       {/* Preview: scaled wrapper so we can see the full height */}
-                      <div style={{width:rW*0.35,height:rH*0.35,overflow:'hidden',borderRadius:10,boxShadow:'0 6px 24px rgba(0,0,0,.5)',position:'relative',flexShrink:0}}>
-                        <div ref={el=>{previewRefs.current[idx]=el;}} style={{transform:'scale(0.35)',transformOrigin:'top left',position:'absolute',top:0,left:0}}>
+                      <div style={{width:rW*0.28,height:rH*0.28,overflow:'hidden',borderRadius:10,boxShadow:'0 6px 24px rgba(0,0,0,.5)',position:'relative',flexShrink:0}}>
+                        <div ref={el=>{previewRefs.current[idx]=el;}} style={{transform:'scale(0.28)',transformOrigin:'top left',position:'absolute',top:0,left:0}}>
                           <SlideEl {...slideProps(idx)}/>
                         </div>
                       </div>
