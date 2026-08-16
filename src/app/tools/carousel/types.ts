@@ -43,3 +43,10 @@ export const defAlign = {tag:-9,bullet:9,footer:-9,statNum:-120,heading:-30,subH
 export function extraPos(p:ExtraPos,sz:number):React.CSSProperties{const m=50,hH=72,fH=58,b:React.CSSProperties={position:'absolute',width:sz,height:sz,zIndex:5};switch(p){case'tr':return{...b,top:hH+m,right:m};case'br':return{...b,bottom:fH+m,right:m};case'bl':return{...b,bottom:fH+m,left:m};case'tl':return{...b,top:hH+m,left:m};case'cr':return{...b,top:'50%',right:m,transform:'translateY(-50%)'};}}
 
 export const clamp = (s:string|undefined, n:number) => s ? String(s).slice(0,n) : '';
+
+export function cleanCaption(str: string): string {
+  let clean = str.replace(/```[a-zA-Z0-9]*/g, '').trim();
+  // Remove headers like "Instagram Caption", "**Instagram Caption:**", "### Instagram Caption" etc. at the start
+  clean = clean.replace(/^(?:[#*_\-\s]*)*(?:Instagram\s+)?Caption\s*(?::)?\s*(?:[#*_\-\s]*)*(?:\r?\n|$)/i, '');
+  return clean.trim();
+}

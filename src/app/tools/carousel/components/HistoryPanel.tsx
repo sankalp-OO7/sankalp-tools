@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { HistoryItem, RATIOS, RatioKey } from '../types';
+import { HistoryItem, RATIOS, RatioKey, cleanCaption } from '../types';
 
 interface HistoryPanelProps {
   history: HistoryItem[];
@@ -348,7 +348,7 @@ function HistoryCard({
 
   const handleCopy = () => {
     if (!h.instagramCaption) return;
-    navigator.clipboard.writeText(h.instagramCaption);
+    navigator.clipboard.writeText(cleanCaption(h.instagramCaption));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -474,7 +474,7 @@ function HistoryCard({
                 transition: 'all 0.2s'
               }}
             >
-              {h.instagramCaption}
+              {cleanCaption(h.instagramCaption)}
             </div>
           </div>
         )}

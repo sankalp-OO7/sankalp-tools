@@ -4,7 +4,8 @@ import html2canvas from 'html2canvas';
 
 import { 
   LOGO_PATH, BRAND, RATIOS, RatioKey, ThemeDef, BUILTIN_THEMES, rTheme, LS, Tab, 
-  SlideData, CarouselData, ImgAdj, defAdj, ExtraImg, ExtraShape, ExtraPos, HistoryItem, defAlign 
+  SlideData, CarouselData, ImgAdj, defAdj, ExtraImg, ExtraShape, ExtraPos, HistoryItem, defAlign,
+  cleanCaption
 } from './types';
 
 import SlideEl from './components/SlideEl';
@@ -36,12 +37,7 @@ function extractJsonAndCaption(text: string): { jsonPart: string; captionPart: s
   const trimmed = text.trim();
   const firstBrace = trimmed.indexOf('{');
   
-  const cleanCaption = (str: string) => {
-    let clean = str.replace(/```[a-zA-Z0-9]*/g, '').trim();
-    // Remove headers like "Instagram Caption", "**Instagram Caption:**", "### Instagram Caption" etc. at the start
-    clean = clean.replace(/^(?:[#*_\-\s]*)*(?:Instagram\s+)?Caption\s*(?::)?\s*(?:[#*_\-\s]*)*(?:\r?\n|$)/i, '');
-    return clean.trim();
-  };
+
 
   if (firstBrace === -1) {
     return { jsonPart: '', captionPart: cleanCaption(trimmed), error: 'No JSON object found (missing {)' };
@@ -592,7 +588,7 @@ Professional financial editorial photography, volumetric cinematic lighting, smo
     setImgAdjs(h.imgAdjs || {});
     setScreenshots(h.screenshots || {});
     setExtraImgs(h.extraImgs || {});
-    setInstagramCaption(h.instagramCaption || '');
+    setInstagramCaption(cleanCaption(h.instagramCaption || ''));
     setActiveSlideIdx(0);
     setCurrentHistoryId(h.id);
 
@@ -743,7 +739,7 @@ Professional financial editorial photography, volumetric cinematic lighting, smo
                   <button onClick={dlAllSlides} disabled={dlAll} style={{flex:1,padding:11,background:dlAll?'rgba(26,111,168,0.5)':'linear-gradient(135deg,#1a6fa8,#2a8fd4)',color:'#fff',fontFamily:"'Space Mono',monospace",fontSize:10,fontWeight:700,letterSpacing:1.5,border:'none',borderRadius:8,cursor:dlAll?'not-allowed':'pointer'}}>{dlAll?status.msg:'⬇ ALL PNG'}</button>
                   {instagramCaption && (
                     <button onClick={() => {
-                      navigator.clipboard.writeText(instagramCaption);
+                      navigator.clipboard.writeText(cleanCaption(instagramCaption));
                       msg('✓ Caption copied to clipboard!', 'ok');
                     }} style={{flex:1,padding:11,background:'rgba(201,168,76,0.12)',border:'1px solid rgba(201,168,76,0.3)',color:'#E8C96A',fontFamily:"'Space Mono',monospace",fontSize:10,borderRadius:8,cursor:'pointer'}}>📝 COPY CAPTION</button>
                   )}
