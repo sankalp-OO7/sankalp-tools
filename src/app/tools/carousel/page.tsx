@@ -376,22 +376,33 @@ export default function CarouselCreator() {
     const subheadline = firstSlide?.subheadline || '';
     
     // Auto-detect subject matter to customize visual hook elements dynamically
+    const hasOil = /oil|crude|energy|brent|petroleum|gas/i.test(t + ' ' + headline + ' ' + subheadline);
     const hasDubai = /dubai|uae|gulf/i.test(t + ' ' + headline + ' ' + subheadline);
     const hasPerson = /man|person|he|she|trader|investor|ceo|founder|expert|billionaire|people/i.test(t + ' ' + headline + ' ' + subheadline);
-    const hasForex = /forex|currency|eur|usd|fx|gold|oil|markets|chart|price/i.test(t + ' ' + headline + ' ' + subheadline);
+    const hasForex = /forex|currency|eur|usd|jpy|cad|fx|gold|markets|chart|price/i.test(t + ' ' + headline + ' ' + subheadline);
 
-    // Dynamic Visual Setup
-    let mainBackground = 'A sleek, premium dark backdrop with a rich, smooth dark-blue-to-black radial gradient and glowing amber/gold dust particles.';
-    let circleContent = 'A glowing, high-contrast digital forex chart showing a sharp green candlestick surge, representing financial opportunity.';
-
-    if (hasDubai) {
-      mainBackground = 'A stunning, high-contrast photo of the futuristic Dubai skyline (Burj Khalifa visible) at golden hour/dusk, with deep orange and purple sky gradients.';
+    // 1. Determine Background
+    let mainBackground = '';
+    if (hasOil) {
+      mainBackground = 'A rich, cinematic wide shot of massive steel oil pumpjacks and offshore drilling platforms at sunset, with a dramatic gradient sky of vibrant orange, fiery gold, and deep purple. Add glowing holographic grid lines and faded digital candlestick charts integrated into the air.';
+    } else if (hasDubai) {
+      mainBackground = 'A stunning, high-contrast photo of the futuristic Dubai skyline and Marina at dusk, with a rich purple-to-gold sky gradient, reflected in calm waters.';
+    } else {
+      mainBackground = 'A premium, dark cybernetic financial trading studio backdrop with a rich radial gradient of deep navy blue, teal, and pitch black. Layered with glowing digital grid networks, abstract mathematical curves, and floating amber particles.';
     }
 
-    if (hasPerson) {
-      circleContent = 'A high-definition, close-up profile of a confident professional trader/investor (man in a modern suit) analyzing live neon financial data, radiating focus and expertise.';
-    } else if (hasForex) {
-      circleContent = 'A glowing 3D glass sphere or circular lens displaying a detailed, high-contrast forex trading candlestick chart with gold currency symbols floating inside.';
+    // 2. Determine Inset Circle Content
+    let circleContent = '';
+    if (hasForex || hasOil) {
+      if (hasOil && hasDubai) {
+        circleContent = 'A glowing, high-contrast Dubai skyline panorama under a golden lens reflection.';
+      } else {
+        circleContent = 'A close-up of a digital forex trading candlestick chart with neon-green and red candle bars glowing brightly against a dark screen.';
+      }
+    } else if (hasPerson) {
+      circleContent = 'A highly detailed profile of a confident professional trader/analyst in a sleek suit, looking intently at trading charts.';
+    } else {
+      circleContent = 'A glowing 3D glass sphere containing floating gold bullion bars and digital trading signals.';
     }
 
     // Determine aspect ratio for Midjourney / DALL-E
@@ -411,12 +422,13 @@ THEME / METADATA:
 
 COMPOSITION & CRITICAL VISUAL HOOK RULES (Based on 2026 Instagram Hook Design Best Practices):
 1. TOP 60% SAFE ZONE: All critical visual elements, subjects, and key graphical details MUST be composed strictly within the upper 60% of the canvas. The bottom 40% will have dark gradients and bold title text overlays, so keep the bottom area simple, clean, and uncluttered.
-2. NO TEXT GENERATED ON THE IMAGE: Do not generate any alphabetic text, labels, or numbers inside the image.
-3. PREMIUM CONTRAST: Use premium color gradients (deep royal blue to pitch black, accented with bright amber and gold) for high visual contrast to stop scrollers instantly.
+2. BACKGROUND TEXTS: Faded, semi-transparent holographic UI elements, stock charts, abstract numbers, and currency pairs (e.g. "USD/CAD", "EUR/USD", "+5.9%") styled as clean technical watermark text floating in the background, giving it a premium dashboard feel.
+3. NO LARGE HEADLINE TEXT GENERATED ON THE IMAGE: Do not generate any main title headings or large readable text labels.
+4. PREMIUM CONTRAST: Use premium color gradients (deep royal blue to pitch black, accented with bright amber and gold) for high visual contrast to stop scrollers instantly.
 
 SPECIFIC SCENE COMPOSITION:
 - MAIN BACKGROUND: ${mainBackground}
-- INSET VISUAL HOOK: In the upper center of the frame, render a highly detailed, floating glassmorphic circle (a clean circular lens or sphere). Inside this circle, show: ${circleContent}
+- INSET VISUAL HOOK (TOP-RIGHT QUADRANT): In the upper-right quadrant of the frame, render a smaller, elegant, floating glassmorphic circle (taking up roughly 25-30% of the image width). Inside this circle, show: ${circleContent}
 - TRANSITIONS & EFFECT: The floating circle has a glowing gold neon outline and a subtle glass reflection, creating a layered, multi-dimensional 3D effect against the background.
 
 MIDJOURNEY PARAMETERS:
