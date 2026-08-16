@@ -105,6 +105,7 @@ export default function CarouselCreator() {
   const [jsonText,setJsonText]=useState('');
   const [data,setData]=useState<CarouselData|null>(null);
   const [activeSlideIdx, setActiveSlideIdx] = useState<number>(0);
+  const [currentHistoryId, setCurrentHistoryId] = useState<string | null>(null);
   const [theme,setTheme]=useState<string>('news');
   const [ratio,setRatio]=useState<RatioKey>('4:5');
   const [screenshots,setScreenshots]=useState<Record<number,string>>({});
@@ -198,6 +199,7 @@ export default function CarouselCreator() {
         instagramCaption: captionPart
       };
       setHistory(prev => [item, ...prev].slice(0, 60));
+      setCurrentHistoryId(item.id);
     }catch(e){ msg('Invalid JSON: '+(e as Error).message,'error'); }
   };
 
@@ -447,6 +449,7 @@ Professional financial editorial photography, volumetric cinematic lighting, smo
     setExtraImgs(h.extraImgs || {});
     setInstagramCaption(h.instagramCaption || '');
     setActiveSlideIdx(0);
+    setCurrentHistoryId(h.id);
 
     try {
       const { jsonPart } = extractJsonAndCaption(h.jsonText);
@@ -485,6 +488,7 @@ Professional financial editorial photography, volumetric cinematic lighting, smo
         instagramCaption:captionPart
       };
       setHistory(prev=>[item,...prev].slice(0, 60));
+      setCurrentHistoryId(item.id);
       setTimeout(()=>{ coverSsInputRef.current?.click(); },400);
     }catch(e:any){ msg('Paste/render error: '+(e?.message||String(e)),'error'); }
   };
@@ -500,6 +504,7 @@ Professional financial editorial photography, volumetric cinematic lighting, smo
       extraImgs
     };
     setHistory(prev => [item, ...prev].slice(0, 60)); // Keep last 60
+    setCurrentHistoryId(item.id);
     msg('✓ Saved to History','ok');
   };
 
@@ -731,59 +736,66 @@ Professional financial editorial photography, volumetric cinematic lighting, smo
               </div>
             ):(
               <div style={{display:'flex',flexDirection:'column',gap:24}}>
-                {/* ── PAGINATION CONTROLS ── */}
-                <div style={{
-                  display:'flex',alignItems:'center',justifyContent:'space-between',
-                  background:'rgba(255, 255, 255, 0.02)',border:'1px solid rgba(255, 255, 255, 0.05)',
-                  borderRadius:12,padding:'12px 18px',backdropFilter:'blur(10px)'
-                }}>
-                  <button 
-                    onClick={() => setActiveSlideIdx(p => Math.max(0, p - 1))} 
-                    disabled={activeSlideIdx === 0} 
-                    style={{
-                      padding:'8px 16px',background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',
-                      borderRadius:8,color:activeSlideIdx === 0 ? '#4b5563' : '#E8C96A',
-                      fontFamily:"'Space Mono',monospace",fontSize:11,fontWeight:700,
-                      cursor:activeSlideIdx === 0 ? 'not-allowed' : 'pointer',transition:'all 0.2s',
-                      opacity: activeSlideIdx === 0 ? 0.4 : 1
-                    }}
-                  >
-                    ◀ PREVIOUS
-                  </button>
-
-                  <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap',justifyContent:'center'}}>
-                    {data.slides.map((_, idx) => (
+                {/* ── HISTORY CAROUSEL PAGINATION CONTROLS ── */}
+                {(() => {
+                  const currentHistoryIdx = history.findIndex(h => h.id === currentHistoryId);
+                  return (
+                    <div style={{
+                      display:'flex',alignItems:'center',justifyContent:'space-between',
+                      background:'rgba(255, 255, 255, 0.02)',border:'1px solid rgba(255, 255, 255, 0.05)',
+                      borderRadius:12,padding:'12px 18px',backdropFilter:'blur(10px)'
+                    }}>
                       <button 
-                        key={idx} 
-                        onClick={() => setActiveSlideIdx(idx)} 
+                        onClick={() => {
+                          if (currentHistoryIdx > 0) {
+                            loadHistoryItem(history[currentHistoryIdx - 1]);
+                          }
+                        }} 
+                        disabled={currentHistoryIdx <= 0} 
                         style={{
-                          width:28,height:28,borderRadius:6,
-                          border:activeSlideIdx === idx ? '1px solid #C9A84C' : '1px solid rgba(255,255,255,0.08)',
-                          background:activeSlideIdx === idx ? 'rgba(201,168,76,0.15)' : 'rgba(255,255,255,0.02)',
-                          color:activeSlideIdx === idx ? '#E8C96A' : '#A3B8CC',
-                          fontFamily:"'Space Mono',monospace",fontSize:10,fontWeight:700,
-                          cursor:'pointer',transition:'all 0.2s'
+                          padding:'8px 16px',background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',
+                          borderRadius:8,color:currentHistoryIdx <= 0 ? '#4b5563' : '#E8C96A',
+                          fontFamily:"'Space Mono',monospace",fontSize:11,fontWeight:700,
+                          cursor:currentHistoryIdx <= 0 ? 'not-allowed' : 'pointer',transition:'all 0.2s',
+                          opacity: currentHistoryIdx <= 0 ? 0.4 : 1
                         }}
                       >
-                        {idx + 1}
+                        ◀ PREV CAROUSEL
                       </button>
-                    ))}
-                  </div>
 
-                  <button 
-                    onClick={() => setActiveSlideIdx(p => Math.min(data.slides.length - 1, p + 1))} 
-                    disabled={activeSlideIdx === data.slides.length - 1} 
-                    style={{
-                      padding:'8px 16px',background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',
-                      borderRadius:8,color:activeSlideIdx === data.slides.length - 1 ? '#4b5563' : '#E8C96A',
-                      fontFamily:"'Space Mono',monospace",fontSize:11,fontWeight:700,
-                      cursor:activeSlideIdx === data.slides.length - 1 ? 'not-allowed' : 'pointer',transition:'all 0.2s',
-                      opacity: activeSlideIdx === data.slides.length - 1 ? 0.4 : 1
-                    }}
-                  >
-                    NEXT ▶
-                  </button>
-                </div>
+                      <div style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:'#8b9bb4',textAlign:'center'}}>
+                        {currentHistoryIdx !== -1 ? (
+                          <>
+                            Carousel <strong style={{color:'#C9A84C'}}>{currentHistoryIdx + 1}</strong> of <strong style={{color:'#C9A84C'}}>{history.length}</strong>
+                            <div style={{fontSize:9,color:'#6b6b80',marginTop:2,maxWidth:250,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+                              {history[currentHistoryIdx].title}
+                            </div>
+                          </>
+                        ) : (
+                          <span style={{color:'#6b6b80'}}>Unsaved / Paste Preview</span>
+                        )}
+                      </div>
+
+                      <button 
+                        onClick={() => {
+                          if (currentHistoryIdx !== -1 && currentHistoryIdx < history.length - 1) {
+                            loadHistoryItem(history[currentHistoryIdx + 1]);
+                          }
+                        }} 
+                        disabled={currentHistoryIdx === -1 || currentHistoryIdx >= history.length - 1} 
+                        style={{
+                          padding:'8px 16px',background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',
+                          borderRadius:8,color:(currentHistoryIdx === -1 || currentHistoryIdx >= history.length - 1) ? '#4b5563' : '#E8C96A',
+                          fontFamily:"'Space Mono',monospace",fontSize:11,fontWeight:700,
+                          cursor:(currentHistoryIdx === -1 || currentHistoryIdx >= history.length - 1) ? 'not-allowed' : 'pointer',transition:'all 0.2s',
+                          opacity: (currentHistoryIdx === -1 || currentHistoryIdx >= history.length - 1) ? 0.4 : 1
+                        }}
+                      >
+                        NEXT CAROUSEL ▶
+                      </button>
+                    </div>
+                  );
+                })()}
 
                 {/* ── ACTIVE PAGINATED PREVIEW ── */}
                 <div style={{
