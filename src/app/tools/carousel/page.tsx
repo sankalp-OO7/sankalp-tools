@@ -903,27 +903,9 @@ Professional financial editorial photography, volumetric cinematic lighting, smo
                     <div style={{
                       display:'flex',alignItems:'center',justifyContent:'space-between',
                       background:'rgba(255, 255, 255, 0.02)',border:'1px solid rgba(255, 255, 255, 0.05)',
-                      borderRadius:12,padding:'12px 18px',backdropFilter:'blur(10px)'
+                      borderRadius:12,padding:'12px 18px',backdropFilter:'blur(10px)',gap:16
                     }}>
-                      <button 
-                        onClick={() => {
-                          if (currentHistoryIdx > 0) {
-                            loadHistoryItem(history[currentHistoryIdx - 1]);
-                          }
-                        }} 
-                        disabled={currentHistoryIdx <= 0} 
-                        style={{
-                          padding:'8px 16px',background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',
-                          borderRadius:8,color:currentHistoryIdx <= 0 ? '#4b5563' : '#E8C96A',
-                          fontFamily:"'Space Mono',monospace",fontSize:11,fontWeight:700,
-                          cursor:currentHistoryIdx <= 0 ? 'not-allowed' : 'pointer',transition:'all 0.2s',
-                          opacity: currentHistoryIdx <= 0 ? 0.4 : 1
-                        }}
-                      >
-                        ◀ PREV CAROUSEL
-                      </button>
-
-                      <div style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:'#8b9bb4',textAlign:'center'}}>
+                      <div style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:'#8b9bb4',textAlign:'left'}}>
                         {currentHistoryIdx !== -1 ? (
                           <>
                             Carousel <strong style={{color:'#C9A84C'}}>{currentHistoryIdx + 1}</strong> of <strong style={{color:'#C9A84C'}}>{history.length}</strong>
@@ -936,23 +918,43 @@ Professional financial editorial photography, volumetric cinematic lighting, smo
                         )}
                       </div>
 
-                      <button 
-                        onClick={() => {
-                          if (currentHistoryIdx !== -1 && currentHistoryIdx < history.length - 1) {
-                            loadHistoryItem(history[currentHistoryIdx + 1]);
-                          }
-                        }} 
-                        disabled={currentHistoryIdx === -1 || currentHistoryIdx >= history.length - 1} 
-                        style={{
-                          padding:'8px 16px',background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',
-                          borderRadius:8,color:(currentHistoryIdx === -1 || currentHistoryIdx >= history.length - 1) ? '#4b5563' : '#E8C96A',
-                          fontFamily:"'Space Mono',monospace",fontSize:11,fontWeight:700,
-                          cursor:(currentHistoryIdx === -1 || currentHistoryIdx >= history.length - 1) ? 'not-allowed' : 'pointer',transition:'all 0.2s',
-                          opacity: (currentHistoryIdx === -1 || currentHistoryIdx >= history.length - 1) ? 0.4 : 1
-                        }}
-                      >
-                        NEXT CAROUSEL ▶
-                      </button>
+                      <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                        <button 
+                          onClick={() => {
+                            if (currentHistoryIdx > 0) {
+                              loadHistoryItem(history[currentHistoryIdx - 1]);
+                            }
+                          }} 
+                          disabled={currentHistoryIdx <= 0} 
+                          style={{
+                            padding:'8px 16px',background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',
+                            borderRadius:8,color:currentHistoryIdx <= 0 ? '#4b5563' : '#E8C96A',
+                            fontFamily:"'Space Mono',monospace",fontSize:11,fontWeight:700,
+                            cursor:currentHistoryIdx <= 0 ? 'not-allowed' : 'pointer',transition:'all 0.2s',
+                            opacity: currentHistoryIdx <= 0 ? 0.4 : 1
+                          }}
+                        >
+                          ◀ PREV
+                        </button>
+
+                        <button 
+                          onClick={() => {
+                            if (currentHistoryIdx !== -1 && currentHistoryIdx < history.length - 1) {
+                              loadHistoryItem(history[currentHistoryIdx + 1]);
+                            }
+                          }} 
+                          disabled={currentHistoryIdx === -1 || currentHistoryIdx >= history.length - 1} 
+                          style={{
+                            padding:'8px 16px',background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',
+                            borderRadius:8,color:(currentHistoryIdx === -1 || currentHistoryIdx >= history.length - 1) ? '#4b5563' : '#E8C96A',
+                            fontFamily:"'Space Mono',monospace",fontSize:11,fontWeight:700,
+                            cursor:(currentHistoryIdx === -1 || currentHistoryIdx >= history.length - 1) ? 'not-allowed' : 'pointer',transition:'all 0.2s',
+                            opacity: (currentHistoryIdx === -1 || currentHistoryIdx >= history.length - 1) ? 0.4 : 1
+                          }}
+                        >
+                          NEXT ▶
+                        </button>
+                      </div>
                     </div>
                   );
                 })()}
