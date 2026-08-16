@@ -104,6 +104,7 @@ export default function CarouselCreator() {
   const [tab,setTab]=useLocalStorage<Tab>(LS.TAB,'creator');
   const [jsonText,setJsonText]=useState('');
   const [data,setData]=useState<CarouselData|null>(null);
+  const [activeSlideIdx, setActiveSlideIdx] = useState<number>(0);
   const [theme,setTheme]=useState<string>('news');
   const [ratio,setRatio]=useState<RatioKey>('4:5');
   const [screenshots,setScreenshots]=useState<Record<number,string>>({});
@@ -189,6 +190,7 @@ export default function CarouselCreator() {
       if(!d.slides?.length){msg('No slides found','error');return;}
       setData(d); setScreenshots({}); setImgAdjs({}); setExtraImgs({});
       setInstagramCaption(captionPart);
+      setActiveSlideIdx(0);
       msg(`✓ ${d.slides.length} slides rendered`,'ok');
       const item: HistoryItem = {
         id: `h_${Date.now()}`, title: d.title || 'Untitled Carousel', savedAt: new Date().toISOString(),
@@ -444,6 +446,7 @@ Professional financial editorial photography, volumetric cinematic lighting, smo
     setScreenshots(h.screenshots || {});
     setExtraImgs(h.extraImgs || {});
     setInstagramCaption(h.instagramCaption || '');
+    setActiveSlideIdx(0);
 
     try {
       const { jsonPart } = extractJsonAndCaption(h.jsonText);
@@ -468,6 +471,7 @@ Professional financial editorial photography, volumetric cinematic lighting, smo
       if(!d.slides?.length){msg('No slides found','error');return;}
       setData(d); setScreenshots({}); setImgAdjs({}); setExtraImgs({});
       setInstagramCaption(captionPart);
+      setActiveSlideIdx(0);
       msg(`✓ ${d.slides.length} slides rendered`,'ok');
       const item:HistoryItem={
         id:`h_${Date.now()}`,
@@ -726,23 +730,141 @@ Professional financial editorial photography, volumetric cinematic lighting, smo
                 <div style={{fontSize:13,maxWidth:380,lineHeight:1.7}}>Use the <strong style={{color:'#A3B8CC'}}>Builder</strong> or <strong style={{color:'#A3B8CC'}}>Prompt</strong> tab to get JSON, then paste here and hit Render.</div>
               </div>
             ):(
-              <div style={{display:'flex',flexWrap:'wrap',gap:24,justifyContent:'flex-start'}}>
-                {data.slides.map((_,idx)=>(
-                  <div key={idx} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:10}}>
-                    {/* Preview: scaled wrapper so we can see the full height */}
-                    <div style={{width:rW*0.4,height:rH*0.4,overflow:'hidden',borderRadius:12,boxShadow:'0 8px 40px rgba(0,0,0,.6)',position:'relative',flexShrink:0}}>
-                      <div ref={el=>{previewRefs.current[idx]=el;}} style={{transform:'scale(0.4)',transformOrigin:'top left',position:'absolute',top:0,left:0}}>
-                        <SlideEl {...slideProps(idx)}/>
-                      </div>
-                    </div>
-                    <div style={{display:'flex',alignItems:'center',gap:10}}>
-                      <span style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:'#6b6b80'}}>Slide {idx+1}/{data.slides.length}</span>
-                      <button onClick={()=>dlSlide(idx,data)} disabled={!!dlIdx[idx]} style={{background:'rgba(201,168,76,0.12)',border:'1px solid rgba(201,168,76,0.3)',color:dlIdx[idx]?'#6b6b80':'#E8C96A',fontFamily:"'Space Mono',monospace",fontSize:10,padding:'6px 16px',borderRadius:6,cursor:dlIdx[idx]?'not-allowed':'pointer'}}>
-                        {dlIdx[idx]?'⏳':'⬇ PNG'}
+              <div style={{display:'flex',flexDirection:'column',gap:24}}>
+                {/* ── PAGINATION CONTROLS ── */}
+                <div style={{
+                  display:'flex',alignItems:'center',justifyContent:'space-between',
+                  background:'rgba(255, 255, 255, 0.02)',border:'1px solid rgba(255, 255, 255, 0.05)',
+                  borderRadius:12,padding:'12px 18px',backdropFilter:'blur(10px)'
+                }}>
+                  <button 
+                    onClick={() => setActiveSlideIdx(p => Math.max(0, p - 1))} 
+                    disabled={activeSlideIdx === 0} 
+                    style={{
+                      padding:'8px 16px',background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',
+                      borderRadius:8,color:activeSlideIdx === 0 ? '#4b5563' : '#E8C96A',
+                      fontFamily:"'Space Mono',monospace",fontSize:11,fontWeight:700,
+                      cursor:activeSlideIdx === 0 ? 'not-allowed' : 'pointer',transition:'all 0.2s',
+                      opacity: activeSlideIdx === 0 ? 0.4 : 1
+                    }}
+                  >
+                    ◀ PREVIOUS
+                  </button>
+
+                  <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap',justifyContent:'center'}}>
+                    {data.slides.map((_, idx) => (
+                      <button 
+                        key={idx} 
+                        onClick={() => setActiveSlideIdx(idx)} 
+                        style={{
+                          width:28,height:28,borderRadius:6,
+                          border:activeSlideIdx === idx ? '1px solid #C9A84C' : '1px solid rgba(255,255,255,0.08)',
+                          background:activeSlideIdx === idx ? 'rgba(201,168,76,0.15)' : 'rgba(255,255,255,0.02)',
+                          color:activeSlideIdx === idx ? '#E8C96A' : '#A3B8CC',
+                          fontFamily:"'Space Mono',monospace",fontSize:10,fontWeight:700,
+                          cursor:'pointer',transition:'all 0.2s'
+                        }}
+                      >
+                        {idx + 1}
                       </button>
+                    ))}
+                  </div>
+
+                  <button 
+                    onClick={() => setActiveSlideIdx(p => Math.min(data.slides.length - 1, p + 1))} 
+                    disabled={activeSlideIdx === data.slides.length - 1} 
+                    style={{
+                      padding:'8px 16px',background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',
+                      borderRadius:8,color:activeSlideIdx === data.slides.length - 1 ? '#4b5563' : '#E8C96A',
+                      fontFamily:"'Space Mono',monospace",fontSize:11,fontWeight:700,
+                      cursor:activeSlideIdx === data.slides.length - 1 ? 'not-allowed' : 'pointer',transition:'all 0.2s',
+                      opacity: activeSlideIdx === data.slides.length - 1 ? 0.4 : 1
+                    }}
+                  >
+                    NEXT ▶
+                  </button>
+                </div>
+
+                {/* ── ACTIVE PAGINATED PREVIEW ── */}
+                <div style={{
+                  display:'flex',flexDirection:'column',alignItems:'center',gap:16,
+                  background:'rgba(3,8,16,0.4)',border:'1px solid rgba(255,255,255,0.03)',
+                  borderRadius:16,padding:'24px 20px',boxShadow:'inset 0 0 40px rgba(0,0,0,0.5)'
+                }}>
+                  <div style={{
+                    width:rW*0.5,height:rH*0.5,overflow:'hidden',borderRadius:12,
+                    boxShadow:'0 16px 60px rgba(0,0,0,.8)',position:'relative',flexShrink:0
+                  }}>
+                    <div style={{transform:'scale(0.5)',transformOrigin:'top left',position:'absolute',top:0,left:0}}>
+                      <SlideEl {...slideProps(activeSlideIdx)}/>
                     </div>
                   </div>
-                ))}
+                  <div style={{display:'flex',alignItems:'center',gap:14}}>
+                    <span style={{fontFamily:"'Space Mono',monospace",fontSize:11,color:'#8b9bb4'}}>
+                      Slide {activeSlideIdx + 1} of {data.slides.length} — Type: <strong style={{color:'#C9A84C'}}>{data.slides[activeSlideIdx].slide_type.toUpperCase()}</strong>
+                    </span>
+                    <button 
+                      onClick={()=>dlSlide(activeSlideIdx,data)} 
+                      disabled={!!dlIdx[activeSlideIdx]} 
+                      style={{
+                        background:'rgba(201,168,76,0.12)',border:'1px solid rgba(201,168,76,0.3)',
+                        color:dlIdx[activeSlideIdx]?'#6b6b80':'#E8C96A',fontFamily:"'Space Mono',monospace",
+                        fontSize:10,padding:'6px 16px',borderRadius:6,cursor:dlIdx[activeSlideIdx]?'not-allowed':'pointer'
+                      }}
+                    >
+                      {dlIdx[activeSlideIdx]?'⏳ Downloading...':'⬇ DOWNLOAD PNG'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* ── ALL SLIDES GRID SECTION ── */}
+                <div style={{
+                  fontFamily:"'Space Mono',monospace",fontSize:10,letterSpacing:2,
+                  color:'#C9A84C',textTransform:'uppercase',borderBottom:'1px solid rgba(255,255,255,0.06)',
+                  paddingBottom:8,marginTop:10
+                }}>
+                  All Slides Grid Preview
+                </div>
+
+                <div style={{display:'flex',flexWrap:'wrap',gap:20,justifyContent:'flex-start'}}>
+                  {data.slides.map((_,idx)=>(
+                    <div 
+                      key={idx} 
+                      onClick={() => setActiveSlideIdx(idx)}
+                      style={{
+                        display:'flex',flexDirection:'column',alignItems:'center',gap:8,
+                        cursor:'pointer',padding:8,borderRadius:12,
+                        background: activeSlideIdx === idx ? 'rgba(201,168,76,0.05)' : 'transparent',
+                        border: activeSlideIdx === idx ? '1px solid rgba(201,168,76,0.2)' : '1px solid transparent',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      {/* Preview: scaled wrapper so we can see the full height */}
+                      <div style={{width:rW*0.35,height:rH*0.35,overflow:'hidden',borderRadius:10,boxShadow:'0 6px 24px rgba(0,0,0,.5)',position:'relative',flexShrink:0}}>
+                        <div ref={el=>{previewRefs.current[idx]=el;}} style={{transform:'scale(0.35)',transformOrigin:'top left',position:'absolute',top:0,left:0}}>
+                          <SlideEl {...slideProps(idx)}/>
+                        </div>
+                      </div>
+                      <div style={{display:'flex',alignItems:'center',gap:6}}>
+                        <span style={{fontFamily:"'Space Mono',monospace",fontSize:10,color:activeSlideIdx === idx ? '#E8C96A' : '#6b6b80'}}>Slide {idx+1}</span>
+                        <button 
+                          onClick={(e)=>{
+                            e.stopPropagation();
+                            dlSlide(idx,data);
+                          }} 
+                          disabled={!!dlIdx[idx]} 
+                          style={{
+                            background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',
+                            color:dlIdx[idx]?'#6b6b80':'#A3B8CC',fontFamily:"'Space Mono',monospace",
+                            fontSize:9,padding:'4px 10px',borderRadius:4,cursor:dlIdx[idx]?'not-allowed':'pointer'
+                          }}
+                        >
+                          {dlIdx[idx]?'⏳':'⬇ PNG'}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
