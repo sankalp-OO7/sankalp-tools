@@ -99,6 +99,19 @@ function extractJsonAndCaption(text: string): { jsonPart: string; captionPart: s
   return { jsonPart, captionPart };
 }
 
+interface DownloadSession {
+  id: string;
+  data: CarouselData;
+  theme: string;
+  ratio: RatioKey;
+  align: any;
+  imgAdjs: Record<number, ImgAdj>;
+  screenshots: Record<number, string>;
+  extraImgs: Record<number, ExtraImg[]>;
+  instagramCaption: string;
+  folderPrefix: string;
+}
+
 // ── Main Page ────────────────────────────────────────────────────────────────
 export default function CarouselCreator() {
   const [tab,setTab]=useLocalStorage<Tab>(LS.TAB,'creator');
@@ -125,9 +138,11 @@ export default function CarouselCreator() {
 
   const previewRefs=useRef<Record<number,HTMLDivElement|null>>({});
   const downloadRefs=useRef<Record<number,HTMLDivElement|null>>({});
+  const bgDownloadRefs=useRef<Record<number,HTMLDivElement|null>>({});
   const coverSsInputRef=useRef<HTMLInputElement|null>(null);
   const [logoSrc,setLogoSrc]=useState(LOGO_PATH);
   const [dirHandle, setDirHandle] = useState<any>(null);
+  const [downloadSession, setDownloadSession] = useState<DownloadSession | null>(null);
 
   // LocalStorage state
   const [customThemes, setCustomThemes] = useLocalStorage<Record<string,ThemeDef>>(LS.THEMES, {});
@@ -283,14 +298,67 @@ export default function CarouselCreator() {
   const dlAllSlides=useCallback(async()=>{
     if(!data) return;
     setDlAll(true);
-    for(let i=data.slides.length-1;i>=0;i--){
-      msg(`⏳ Downloading slide ${i+1}/${data.slides.length}...`);
-      await dlSlide(i,data);
-      await new Promise(r=>setTimeout(r,800));
+    try {
+      const session: DownloadSession = {
+        id: `dl_${Date.now()}`,
+        data: JSON.parse(JSON.stringify(data)),
+        theme,
+        ratio,
+        align: { ...align },
+        imgAdjs: { ...imgAdjs },
+        screenshots: { ...screenshots },
+        extraImgs: { ...extraImgs },
+        instagramCaption,
+        folderPrefix
+      };
+      setDownloadSession(session);
+      await new Promise(r => setTimeout(r, 400));
+      
+      const bgRatio = session.ratio;
+      const bgRW = RATIOS[bgRatio].w;
+      const bgRH = RATIOS[bgRatio].h;
+      
+      for(let i=session.data.slides.length-1;i>=0;i--){
+        msg(`⏳ Downloading slide ${i+1}/${session.data.slides.length}...`);
+        setDlIdx(p => ({ ...p, [i]: true }));
+        try {
+          const el = bgDownloadRefs.current[i];
+          if(!el) throw new Error('Background render element not ready');
+          await document.fonts.ready;
+          await new Promise(r=>setTimeout(r,300));
+          const hiResCanvas:HTMLCanvasElement=await html2canvas(el,{
+            width:bgRW, height:bgRH, scale:2,
+            useCORS:true, allowTaint:true, backgroundColor:null, logging:false,
+            windowWidth:bgRW, windowHeight:bgRH,
+            x:0, y:0, scrollX:0, scrollY:0,
+            imageTimeout:8000,
+          });
+          const out=document.createElement('canvas');
+          out.width=bgRW; out.height=bgRH;
+          const ctx=out.getContext('2d')!;
+          ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
+          ctx.drawImage(hiResCanvas,0,0,bgRW,bgRH);
+          const a=document.createElement('a');
+          const name=(session.data.title||'carousel').replace(/[^a-z0-9]/gi,'-').toLowerCase();
+          a.download=`shamsgs-${name}-slide${i+1}-${bgRatio.replace(':','x')}.png`;
+          a.href=out.toDataURL('image/png');
+          a.click();
+        } catch(e: any) {
+          console.error('html2canvas error:',e);
+          msg('Download error: '+(e?.message||String(e)),'error');
+        } finally {
+          setDlIdx(p => ({ ...p, [i]: false }));
+        }
+        await new Promise(r=>setTimeout(r,800));
+      }
+      msg(`✓ All ${session.data.slides.length} slides saved as PNG`,'ok');
+    } catch(e: any) {
+      msg('Download error: ' + (e?.message || String(e)), 'error');
+    } finally {
+      setDlAll(false);
+      setDownloadSession(null);
     }
-    setDlAll(false);
-    msg(`✓ All ${data.slides.length} slides saved as PNG`,'ok');
-  },[data,dlSlide]);
+  },[data,theme,ratio,align,imgAdjs,screenshots,extraImgs,instagramCaption,folderPrefix]);
 
   const dlFolderSlides = useCallback(async () => {
     if (!data) return;
@@ -318,26 +386,45 @@ export default function CarouselCreator() {
       
       const subDir = await activeDir.getDirectoryHandle(folderPrefix, { create: true });
       
-      for (let i = 0; i < data.slides.length; i++) {
-        msg(`⏳ Saving slide ${i + 1}/${data.slides.length} to folder "${folderPrefix}"...`);
+      const session: DownloadSession = {
+        id: `dl_${Date.now()}`,
+        data: JSON.parse(JSON.stringify(data)),
+        theme,
+        ratio,
+        align: { ...align },
+        imgAdjs: { ...imgAdjs },
+        screenshots: { ...screenshots },
+        extraImgs: { ...extraImgs },
+        instagramCaption,
+        folderPrefix
+      };
+      setDownloadSession(session);
+      await new Promise(r => setTimeout(r, 400));
+      
+      const bgRatio = session.ratio;
+      const bgRW = RATIOS[bgRatio].w;
+      const bgRH = RATIOS[bgRatio].h;
+      
+      for (let i = 0; i < session.data.slides.length; i++) {
+        msg(`⏳ Saving slide ${i + 1}/${session.data.slides.length} to folder "${session.folderPrefix}"...`);
         setDlIdx(p => ({ ...p, [i]: true }));
         try {
-          const el = downloadRefs.current[i];
-          if (!el) throw new Error('Render element not ready');
+          const el = bgDownloadRefs.current[i];
+          if (!el) throw new Error('Background render element not ready');
           await document.fonts.ready;
           await new Promise(r => setTimeout(r, 200));
           const hiResCanvas: HTMLCanvasElement = await html2canvas(el, {
-            width: rW, height: rH, scale: 2,
+            width: bgRW, height: bgRH, scale: 2,
             useCORS: true, allowTaint: true, backgroundColor: null, logging: false,
-            windowWidth: rW, windowHeight: rH,
+            windowWidth: bgRW, windowHeight: bgRH,
             x: 0, y: 0, scrollX: 0, scrollY: 0,
             imageTimeout: 8000,
           });
           const out = document.createElement('canvas');
-          out.width = rW; out.height = rH;
+          out.width = bgRW; out.height = bgRH;
           const ctx = out.getContext('2d')!;
           ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
-          ctx.drawImage(hiResCanvas, 0, 0, rW, rH);
+          ctx.drawImage(hiResCanvas, 0, 0, bgRW, bgRH);
           
           const blob = await new Promise<Blob | null>(resolve => out.toBlob(resolve, 'image/png'));
           if (!blob) throw new Error(`Failed to generate blob for slide ${i + 1}`);
@@ -356,11 +443,11 @@ export default function CarouselCreator() {
       }
       
       // Write caption.txt inside directory if present
-      if (instagramCaption) {
+      if (session.instagramCaption) {
         try {
           const captionFileHandle = await subDir.getFileHandle('caption.txt', { create: true });
           const captionWritable = await captionFileHandle.createWritable();
-          await captionWritable.write(instagramCaption);
+          await captionWritable.write(session.instagramCaption);
           await captionWritable.close();
         } catch (e) {
           console.error('Failed to write caption.txt inside directory:', e);
@@ -378,15 +465,16 @@ export default function CarouselCreator() {
         }
         return prev + ' 2';
       });
-      msg(`✓ Folder "${folderPrefix}" created and populated successfully`, 'ok');
+      msg(`✓ Folder "${session.folderPrefix}" created and populated successfully`, 'ok');
     } catch (e: any) {
       console.error('Directory write error:', e);
       msg('Folder write error: ' + (e?.message || String(e)), 'error');
       setDirHandle(null);
     } finally {
       setDlAll(false);
+      setDownloadSession(null);
     }
-  }, [data, folderPrefix, rW, rH, setFolderPrefix, dirHandle, instagramCaption]);
+  }, [data, folderPrefix, theme, ratio, align, imgAdjs, screenshots, extraImgs, setFolderPrefix, dirHandle, instagramCaption]);
 
   const dlCaptionFile = useCallback(() => {
     if (!instagramCaption) {
@@ -922,6 +1010,38 @@ Professional financial editorial photography, volumetric cinematic lighting, smo
               <SlideEl {...slideProps(idx)}/>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* ── BACKGROUND DOWNLOAD SESSION CONTAINER — off-screen ── */}
+      {downloadSession && (
+        <div style={{position:'fixed',top:0,left:'-9999px',width:RATIOS[downloadSession.ratio].w,pointerEvents:'none',zIndex:-1}}>
+          {downloadSession.data.slides.map((s, idx) => {
+            const bgTh = rTheme(downloadSession.theme, customThemes);
+            const bgRatio = downloadSession.ratio;
+            const bgRW = RATIOS[bgRatio].w;
+            const bgRH = RATIOS[bgRatio].h;
+            
+            const bgSlideProps = {
+              slide: { ...s, tag: s.tag || downloadSession.data.category },
+              idx,
+              total: downloadSession.data.slides.length,
+              theme: bgTh,
+              screenshots: downloadSession.screenshots,
+              extraImgs: downloadSession.extraImgs,
+              logoSrc,
+              imgAdjs: downloadSession.imgAdjs,
+              align: { ...defAlign, ...downloadSession.align },
+              slideW: bgRW,
+              slideH: bgRH
+            };
+            
+            return (
+              <div key={`bg-dl-${idx}`} ref={el=>{bgDownloadRefs.current[idx]=el;}} style={{width:bgRW,height:bgRH,overflow:'hidden'}}>
+                <SlideEl {...bgSlideProps}/>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
