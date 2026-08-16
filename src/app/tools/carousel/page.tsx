@@ -37,11 +37,10 @@ function extractJsonAndCaption(text: string): { jsonPart: string; captionPart: s
   const firstBrace = trimmed.indexOf('{');
   
   const cleanCaption = (str: string) => {
-    return str
-      .replace(/```[a-zA-Z0-9]*/g, '')
-      .replace(/^(Instagram\s+)?Caption:\s*/i, '')
-      .replace(/^(Instagram\s+)?Caption\s*$/im, '')
-      .trim();
+    let clean = str.replace(/```[a-zA-Z0-9]*/g, '').trim();
+    // Remove headers like "Instagram Caption", "**Instagram Caption:**", "### Instagram Caption" etc. at the start
+    clean = clean.replace(/^(?:[#*_\-\s]*)*(?:Instagram\s+)?Caption\s*(?::)?\s*(?:[#*_\-\s]*)*(?:\r?\n|$)/i, '');
+    return clean.trim();
   };
 
   if (firstBrace === -1) {
@@ -110,7 +109,9 @@ interface DownloadSession {
   extraImgs: Record<number, ExtraImg[]>;
   instagramCaption: string;
   folderPrefix: string;
+  reverseDownload?: boolean;
 }
+
 
 // ── Main Page ────────────────────────────────────────────────────────────────
 export default function CarouselCreator() {
@@ -147,6 +148,7 @@ export default function CarouselCreator() {
   // LocalStorage state
   const [customThemes, setCustomThemes] = useLocalStorage<Record<string,ThemeDef>>(LS.THEMES, {});
   const [folderPrefix, setFolderPrefix] = useLocalStorage<string>('cc_folder_prefix', '1');
+  const [reverseDownload, setReverseDownload] = useLocalStorage<boolean>('cc_reverse_download', true);
   const [history, setHistory] = useLocalStorage<HistoryItem[]>(LS.HISTORY, []);
   
   // Backup state (excluding screenshots for size)
@@ -309,7 +311,8 @@ export default function CarouselCreator() {
         screenshots: { ...screenshots },
         extraImgs: { ...extraImgs },
         instagramCaption,
-        folderPrefix
+        folderPrefix,
+        reverseDownload
       };
       setDownloadSession(session);
       await new Promise(r => setTimeout(r, 400));
@@ -318,7 +321,18 @@ export default function CarouselCreator() {
       const bgRW = RATIOS[bgRatio].w;
       const bgRH = RATIOS[bgRatio].h;
       
-      for(let i=session.data.slides.length-1;i>=0;i--){
+      const indices: number[] = [];
+      if (session.reverseDownload) {
+        for (let i = session.data.slides.length - 1; i >= 0; i--) {
+          indices.push(i);
+        }
+      } else {
+        for (let i = 0; i < session.data.slides.length; i++) {
+          indices.push(i);
+        }
+      }
+
+      for (const i of indices) {
         msg(`⏳ Downloading slide ${i+1}/${session.data.slides.length}...`);
         setDlIdx(p => ({ ...p, [i]: true }));
         try {
@@ -358,7 +372,7 @@ export default function CarouselCreator() {
       setDlAll(false);
       setDownloadSession(null);
     }
-  },[data,theme,ratio,align,imgAdjs,screenshots,extraImgs,instagramCaption,folderPrefix]);
+  },[data,theme,ratio,align,imgAdjs,screenshots,extraImgs,instagramCaption,folderPrefix,reverseDownload]);
 
   const dlFolderSlides = useCallback(async () => {
     if (!data) return;
@@ -396,7 +410,8 @@ export default function CarouselCreator() {
         screenshots: { ...screenshots },
         extraImgs: { ...extraImgs },
         instagramCaption,
-        folderPrefix
+        folderPrefix,
+        reverseDownload
       };
       setDownloadSession(session);
       await new Promise(r => setTimeout(r, 400));
@@ -405,7 +420,18 @@ export default function CarouselCreator() {
       const bgRW = RATIOS[bgRatio].w;
       const bgRH = RATIOS[bgRatio].h;
       
-      for (let i = 0; i < session.data.slides.length; i++) {
+      const indices: number[] = [];
+      if (session.reverseDownload) {
+        for (let i = session.data.slides.length - 1; i >= 0; i--) {
+          indices.push(i);
+        }
+      } else {
+        for (let i = 0; i < session.data.slides.length; i++) {
+          indices.push(i);
+        }
+      }
+
+      for (const i of indices) {
         msg(`⏳ Saving slide ${i + 1}/${session.data.slides.length} to folder "${session.folderPrefix}"...`);
         setDlIdx(p => ({ ...p, [i]: true }));
         try {
@@ -474,7 +500,7 @@ export default function CarouselCreator() {
       setDlAll(false);
       setDownloadSession(null);
     }
-  }, [data, folderPrefix, theme, ratio, align, imgAdjs, screenshots, extraImgs, setFolderPrefix, dirHandle, instagramCaption]);
+  }, [data, folderPrefix, theme, ratio, align, imgAdjs, screenshots, extraImgs, setFolderPrefix, dirHandle, instagramCaption, reverseDownload]);
 
   const dlCaptionFile = useCallback(() => {
     if (!instagramCaption) {
@@ -737,6 +763,25 @@ Professional financial editorial photography, volumetric cinematic lighting, smo
                   <div style={{display:'flex',gap:6}}>
                     <input type="text" value={folderPrefix} onChange={e=>setFolderPrefix(e.target.value)} style={{width:100,background:'#030810',border:'1px solid rgba(255,255,255,.1)',borderRadius:6,color:'#FFF',padding:'6px 10px',fontSize:12,fontFamily:"'Space Mono',monospace",outline:'none'}}/>
                     <button onClick={dlFolderSlides} disabled={dlAll} style={{flex:1,padding:'6px 10px',background:dlAll?'rgba(201,168,76,0.5)':'linear-gradient(135deg,#C9A84C,#E8C96A)',color:'#050E1C',fontFamily:"'Space Mono',monospace",fontSize:10,fontWeight:700,letterSpacing:1,border:'none',borderRadius:8,cursor:dlAll?'not-allowed':'pointer'}}>{dlAll?'Saving...':'⬇ DL FOLDER'}</button>
+                  </div>
+                  <div style={{marginTop:8, display:'flex', justifyContent:'space-between', alignItems:'center', background:'rgba(255,255,255,0.02)', border:'1px dashed rgba(255,255,255,0.08)', borderRadius:6, padding:'6px 10px'}}>
+                    <span style={{fontSize:9, fontFamily:"'Space Mono',monospace", color:'#8b9bb4'}}>Download Order</span>
+                    <button 
+                      onClick={() => setReverseDownload(p => !p)}
+                      style={{
+                        background:'rgba(201,168,76,0.08)',
+                        border:'1px solid rgba(201,168,76,0.2)',
+                        color:'#E8C96A',
+                        fontFamily:"'Space Mono',monospace",
+                        fontSize:8,
+                        padding:'3px 8px',
+                        borderRadius:4,
+                        cursor:'pointer',
+                        transition:'all 0.2s'
+                      }}
+                    >
+                      {reverseDownload ? 'REVERSE (LAST ➔ FIRST)' : 'NORMAL (FIRST ➔ LAST)'}
+                    </button>
                   </div>
                 </div>
               </div>}
