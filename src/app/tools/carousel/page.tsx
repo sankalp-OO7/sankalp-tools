@@ -175,6 +175,37 @@ export default function CarouselCreator() {
     img.src=LOGO_PATH+'?t='+Date.now();
   },[]);
 
+  // Keep track of scroller and restore position for history tab
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (tab !== 'history') return;
+
+    // Restore scroll position
+    const saved = localStorage.getItem('history_scroll_pos');
+    if (saved) {
+      const y = parseInt(saved, 10);
+      window.scrollTo(0, y);
+      // Double check scroll restore after a render cycle
+      const t = setTimeout(() => {
+        window.scrollTo(0, y);
+      }, 50);
+      return () => clearTimeout(t);
+    }
+  }, [tab, history]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (tab !== 'history') return;
+
+    const handleScroll = () => {
+      const y = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop;
+      localStorage.setItem('history_scroll_pos', y.toString());
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [tab]);
+
   const th=rTheme(theme, customThemes);
   const rW = RATIOS[ratio].w;
   const rH = RATIOS[ratio].h;
